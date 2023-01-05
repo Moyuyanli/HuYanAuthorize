@@ -1,7 +1,7 @@
 package cn.chahuyun.authorize.enums;
 
 /**
- * 匹配方式枚举
+ * 匹配方式枚举<p>
  *
  * @author Moyuyanli
  * @Date 2023/1/2 22:59

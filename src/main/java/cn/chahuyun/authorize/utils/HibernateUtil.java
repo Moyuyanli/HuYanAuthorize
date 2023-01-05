@@ -1,6 +1,7 @@
-package cn.chahuyun.authorize.manager;
+package cn.chahuyun.authorize.utils;
 
 import cn.chahuyun.authorize.HuYanAuthorize;
+import cn.chahuyun.authorize.entity.PermissionInfo;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import xyz.cssxsh.mirai.hibernate.MiraiHibernateConfiguration;
@@ -45,6 +46,10 @@ public class HibernateUtil {
             HuYanAuthorize.log.error("请删除data中的HuYanAuthorize.mv.db后重新启动！", e);
             return;
         }
+        PermissionInfo adminPerm = new PermissionInfo("admin", "权限插件的管理员");
+        factory.fromTransaction(session -> session.merge(adminPerm));
+        PermissionInfo allPerm = new PermissionInfo("all", "除管理员以外的任意其他权限");
+        factory.fromTransaction(session -> session.merge(allPerm));
         HuYanAuthorize.log.info("HuYanAuthorize database initialization succeeded!");
     }
 

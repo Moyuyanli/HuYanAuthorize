@@ -3,13 +3,15 @@ package cn.chahuyun.authorize.entity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Data;
 
 /**
- * 权限信息
+ * 权限信息<p>
  *
  * @author Moyuyanli
  * @date 2023/1/3 11:24
  */
+@Data
 @Entity
 @Table(name = "PermissionInfo")
 public class PermissionInfo {
@@ -29,22 +31,6 @@ public class PermissionInfo {
 
     public PermissionInfo(String code, String description) {
         this.code = code;
-        this.description = description;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
         this.description = description;
     }
 
