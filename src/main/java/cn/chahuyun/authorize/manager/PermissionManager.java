@@ -12,11 +12,13 @@ import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
+import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.message.data.SingleMessage;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -30,19 +32,18 @@ public class PermissionManager {
 
 
     /**
-     * 添加/删除权限
+     * 为 群用户 操作权限<p>
      *
      * @param event 消息事件
      * @author Moyuyanli
      * @date 2023/1/4 22:58
      */
     @MessageAuthorize(
-            text = "^[+|-]\\[mirai:at:\\d+]( +\\S+){1,5}",
-            messageMatching = MessageMatchingEnum.REGULAR,
-            userPermissions = {"admin"},
+            text = "^[+|-]\\[mirai:at:\\d+]( +\\S+){1,5}", messageMatching = MessageMatchingEnum.REGULAR,
+            userPermissions = "admin",
             messageEventType = GroupMessageEvent.class
     )
-    public void addPermission(GroupMessageEvent event) {
+    public void controlMemberPermission(GroupMessageEvent event) {
         Contact subject = event.getSubject();
         Group group = event.getGroup();
         Bot bot = event.getBot();
@@ -58,7 +59,7 @@ public class PermissionManager {
             }
         }
         if (atId == 0) {
-            subject.sendMessage("权限添加识别失败!");
+            subject.sendMessage("权限操作识别失败!");
             return;
         }
 
@@ -68,64 +69,133 @@ public class PermissionManager {
         String[] split = code.split(" +");
         if (b) {
             builder.append(QueryUtil.formatMessage("为群成员%s(%s)添加以下权限:", Objects.requireNonNull(group.get(atId)).getNick(), atId));
-            for (int i = 1; i < split.length; i++) {
-                String perm = split[i];
-                if (!isPermission(perm)) {
-                    builder.append("\n权限:").append(perm).append("-权限不存在!");
-                    continue;
-                }
-                //是否存在该权限
-                if (checkPermission(bot.getId(), subject.getId(), atId, perm)) {
-                    builder.append("\n权限:").append(perm).append("-已存在!");
-                    continue;
-                }
-                UserPermissionInfo userPermissionInfo = new UserPermissionInfo(atId, subject.getId(), bot.getId(), false, perm);
-                if (userPermissionInfo.save()) {
-                    builder.append("\n权限:").append(perm).append("-添加成功!");
-                } else {
-                    builder.append("\n权限:").append(perm).append("-添加失败!");
-                }
-            }
         } else {
             builder.append(QueryUtil.formatMessage("为群成员%s(%s)删除以下权限:", Objects.requireNonNull(group.get(atId)).getNick(), atId));
-            for (int i = 1; i < split.length; i++) {
-                String perm = split[i];
-                if (!isPermission(perm)) {
-                    builder.append("\n权限:").append(perm).append("-权限不存在!");
-                    continue;
-                }
-                //是否存在该权限
-                if (checkPermission(bot.getId(), subject.getId(), atId, perm)) {
-                    long finalAtId = atId;
-                    Boolean aBoolean = HibernateUtil.factory.fromSession(session -> {
-                        try {
-                            UserPermissionInfo singleResult = session.createQuery(
-                                    "select u.* from UserPermissionInfo u " +
-                                            "left join PermissionInfo perm " +
-                                            "and u.bot ='" + bot.getId() + "' " +
-                                            "and u.qq = '" + finalAtId + "' " +
-                                            "and u.groupId = '" + subject.getId() + "' " +
-                                            "and perm.code = '" + code + "'", UserPermissionInfo.class).getSingleResult();
-                            session.remove(singleResult);
-                            return true;
-                        } catch (Exception e) {
-                            HuYanAuthorize.log.error("群成员基本权限删除失败:", e);
-                            return false;
-                        }
-                    });
-                    if (aBoolean) {
-                        builder.append("\n权限:").append(perm).append("-删除成功!");
-                    } else {
-                        builder.append("\n权限:").append(perm).append("-删除失败!");
-                    }
-                } else {
-                    builder.append("\n权限:").append(perm).append("-不存在!");
-                }
-            }
         }
-        subject.sendMessage(builder.build());
+        MessageChain singleMessages = operationPermissions(b, bot.getId(), subject.getId(), atId, false, builder, split);
+        subject.sendMessage(singleMessages);
     }
 
+    /**
+     * 为 全局用户 操作权限<p>
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2023/1/6 17:52
+     */
+    @MessageAuthorize(
+            text = "^[+|-]\\d+( +\\S+){1,5}", messageMatching = MessageMatchingEnum.REGULAR,
+            userPermissions = "admin"
+    )
+    public void controlFriendPermission(MessageEvent event) {
+
+        long botId = event.getBot().getId();
+        Contact subject = event.getSubject();
+
+        MessageChain message = event.getMessage();
+        String code = message.serializeToMiraiCode();
+
+        String[] split = code.split(" +");
+
+        boolean b = code.charAt(0) == '+';
+
+        long userId = Long.parseLong(split[0].substring(1));
+
+        MessageChainBuilder builder = QueryUtil.quoteReply(message);
+
+        if (b) {
+            builder.append(QueryUtil.formatMessage("为用户 %s 添加以下权限:", userId));
+        } else {
+            builder.append(QueryUtil.formatMessage("为用户 %s 删除以下权限:", userId));
+        }
+        MessageChain singleMessages = operationPermissions(b, botId, userId, userId, true, builder, split);
+        subject.sendMessage(singleMessages);
+    }
+
+    /**
+     * 为 群 操作权限<p>
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2023/1/6 17:58
+     */
+
+    @MessageAuthorize(
+            text = "^[+|-]group( +\\S+){1,5}", messageMatching = MessageMatchingEnum.REGULAR,
+            userPermissions = "admin",
+            messageEventType = GroupMessageEvent.class
+    )
+    public void controlGroupPermission(GroupMessageEvent event) {
+        long botId = event.getBot().getId();
+        Contact subject = event.getSubject();
+
+        Group group = event.getGroup();
+        long groupId = group.getId();
+
+        MessageChain message = event.getMessage();
+        String code = message.serializeToMiraiCode();
+
+        String[] split = code.split(" +");
+
+        boolean b = code.charAt(0) == '+';
+
+        MessageChainBuilder builder = QueryUtil.quoteReply(message);
+
+        if (b) {
+            builder.append(QueryUtil.formatMessage("为群%s(%s)添加以下权限:", group.getName(), groupId));
+        } else {
+            builder.append(QueryUtil.formatMessage("为群%s(%s)删除以下权限:", group.getName(), groupId));
+        }
+        MessageChain singleMessages = operationPermissions(b, botId, groupId, groupId, true, builder, split);
+        subject.sendMessage(singleMessages);
+    }
+
+    /**
+     * 查看群成员权限<p>
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2023/1/6 18:20
+     */
+    @MessageAuthorize(
+            text = "[!！]prem ?\\[mirai:at:\\d+]", messageMatching = MessageMatchingEnum.REGULAR,
+            userPermissions = "admin",
+            messageEventType = GroupMessageEvent.class
+    )
+    public void viewMemberPermission(GroupMessageEvent event) {
+        long botId = event.getBot().getId();
+        MessageChain message = event.getMessage();
+        Group subject = event.getSubject();
+        Group group = event.getGroup();
+        long groupId = group.getId();
+        MessageChainBuilder builder = QueryUtil.quoteReply(message);
+
+        long atId = 0;
+        for (SingleMessage singleMessage : message) {
+            if (singleMessage instanceof At) {
+                atId = ((At) singleMessage).getTarget();
+            }
+        }
+        if (atId == 0) {
+            subject.sendMessage("权限查看识别失败!");
+            return;
+        }
+        long finalAtId = atId;
+        List<UserPermissionInfo> userPermissionInfos = null;
+        try {
+            userPermissionInfos = HibernateUtil.factory.fromSession(session -> session.createQuery(
+                    "from UserPermissionInfo as u " +
+                            "where u.bot ='" + botId + "' " +
+                            "and u.qq = '" + finalAtId + "' " +
+                            "and u.groupId = '" + groupId + "' " +
+                            "and u.global = false ", UserPermissionInfo.class).list());
+        } catch (Exception e) {
+            HuYanAuthorize.log.error(e);
+            return;
+        }
+        builder.append(String.format("群成员%s(%s)拥有下列权限:", Objects.requireNonNull(group.get(atId)).getNick(), atId));
+        subject.sendMessage(viewPermissions(userPermissionInfos, builder));
+    }
 
     @MessageAuthorize(
             text = "测试",
@@ -210,6 +280,95 @@ public class PermissionManager {
                 return false;
             }
         }
+    }
+
+    /**
+     * 操作权限<p>
+     *
+     * @param b        true 添加
+     * @param botId    机器人id
+     * @param groupId  群id
+     * @param userId   用户id
+     * @param isGlobal 是否是全局权限
+     * @param builder  消息构造链
+     * @param split    权限分割
+     * @return net.mamoe.mirai.message.data.MessageChain
+     * @author Moyuyanli
+     * @date 2023/1/6 17:44
+     */
+    private MessageChain operationPermissions(boolean b, long botId, long groupId, long userId, boolean isGlobal, MessageChainBuilder builder, String[] split) {
+        if (b) {
+            for (int i = 1; i < split.length; i++) {
+                String perm = split[i];
+                if (!isPermission(perm)) {
+                    builder.append("\n权限:").append(perm).append("-权限不存在!");
+                    continue;
+                }
+                //是否存在该权限
+                if (checkPermission(botId, groupId, userId, perm)) {
+                    builder.append("\n权限:").append(perm).append("-已存在!");
+                    continue;
+                }
+                UserPermissionInfo userPermissionInfo = new UserPermissionInfo(userId, groupId, botId, isGlobal, perm);
+                if (userPermissionInfo.save()) {
+                    builder.append("\n权限:").append(perm).append("-添加成功!");
+                } else {
+                    builder.append("\n权限:").append(perm).append("-添加失败!");
+                }
+            }
+        } else {
+            for (int i = 1; i < split.length; i++) {
+                String perm = split[i];
+                if (!isPermission(perm)) {
+                    builder.append("\n权限:").append(perm).append("-权限不存在!");
+                    continue;
+                }
+                //是否存在该权限
+                if (checkPermission(botId, groupId, userId, perm)) {
+                    Boolean aBoolean = HibernateUtil.factory.fromSession(session -> {
+                        try {
+                            UserPermissionInfo singleResult = session.createQuery(
+                                    "from UserPermissionInfo as u " +
+                                            "left join PermissionInfo as perm on u.code = perm.code " +
+                                            "where u.bot ='" + botId + "' " +
+                                            "and u.qq = '" + userId + "' " +
+                                            "and u.groupId = '" + groupId + "' " +
+                                            "and perm.code = '" + perm + "'", UserPermissionInfo.class).getSingleResult();
+                            session.remove(singleResult);
+                            return true;
+                        } catch (Exception e) {
+                            HuYanAuthorize.log.error("群成员基本权限删除失败:", e);
+                            return false;
+                        }
+                    });
+                    if (aBoolean) {
+                        builder.append("\n权限:").append(perm).append("-删除成功!");
+                    } else {
+                        builder.append("\n权限:").append(perm).append("-删除失败!");
+                    }
+                } else {
+                    builder.append("\n权限:").append(perm).append("-不存在!");
+                }
+            }
+        }
+        return builder.build();
+    }
+
+    /**
+     * 拼接权限消息<p>
+     *
+     * @param userPermissionInfos 用户拥有权限列表
+     * @param builder             消息构造链
+     * @return net.mamoe.mirai.message.data.MessageChain
+     * @author Moyuyanli
+     * @date 2023/1/6 18:39
+     */
+    private MessageChain viewPermissions(List<UserPermissionInfo> userPermissionInfos, MessageChainBuilder builder) {
+        for (UserPermissionInfo userPermissionInfo : userPermissionInfos) {
+            PermissionInfo permissionInfo = userPermissionInfo.getPermissionInfo();
+            builder.append(QueryUtil.formatMessage("\n权限:%s\n%s", permissionInfo.getCode(), permissionInfo.getDescription()));
+        }
+        return builder.build();
     }
 
 }

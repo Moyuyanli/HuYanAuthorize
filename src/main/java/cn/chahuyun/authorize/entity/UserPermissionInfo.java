@@ -42,6 +42,12 @@ public class UserPermissionInfo {
      */
     private String code;
 
+    /**
+     * 权限信息
+     */
+    @Transient
+    private PermissionInfo permissionInfo;
+
     public UserPermissionInfo() {
     }
 
@@ -66,5 +72,14 @@ public class UserPermissionInfo {
             HuYanAuthorize.log.error("群成员基本权限添加失败:", e);
             return false;
         }
+    }
+
+    /**
+     * 获取权限信息
+     *
+     * @return 权限信息
+     */
+    public PermissionInfo getPermissionInfo() {
+        return HibernateUtil.factory.fromSession(session -> session.createQuery("from PermissionInfo as prem where prem.code = '" + code + "'", PermissionInfo.class).getSingleResult());
     }
 }
