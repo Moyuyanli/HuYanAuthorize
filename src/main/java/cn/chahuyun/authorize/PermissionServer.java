@@ -87,28 +87,17 @@ public class PermissionServer {
 
         //扫描包下的类
         ClassScanner classScanner = new ClassScanner(packagePath, aClass -> aClass.isAnnotationPresent(MessageComponent.class));
+        //获取插件的classloader
         ClassLoader classLoader = instance.getClass().getClassLoader();
         classScanner.setClassLoader(classLoader);
-        //拿到包扫描反射类
-        Class<ClassScanner> classScannerClass = ClassScanner.class;
-        //获取classload加载的信息
-        Enumeration<URL> resources = classLoader.getResources(packagePath);
-        //进行类扫描
-        EnumerationIter<URL> enumerationIter = new EnumerationIter<>(resources);
-        for (URL url : enumerationIter) {
-            try {
-                Method scanJar = classScannerClass.getDeclaredMethod("scanJar", JarFile.class);
-                scanJar.setAccessible(true);
-                scanJar.invoke(classScanner, URLUtil.getJarFile(url));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        Field classes = classScannerClass.getDeclaredField("classes");
-        classes.setAccessible(true);
-        //获取到对应的类
-        Set<Class<?>> scan = (Set<Class<?>>) classes.get(classScanner);
+        Set<Class<?>> scan = classScanner.scan();
 
+        if (scan.isEmpty()) {
+            log.debug("使用旧的类扫描方式");
+            scan = reflectiveScan(classLoader, classScanner, packagePath);
+        }
+
+        //获取到对应的类
         scan.forEach(aClass -> {
             log.debug("已扫描到消息注册类->" + aClass.getName());
             //尝试实例化该类
@@ -116,7 +105,7 @@ public class PermissionServer {
             try {
                 newInstance = aClass.getConstructor().newInstance();
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                    NoSuchMethodException e) {
+                     NoSuchMethodException e) {
                 log.error("注册类:" + aClass.getName() + "实例化失败!");
                 return;
             }
@@ -197,7 +186,7 @@ public class PermissionServer {
      * @date 2023/1/3 11:15
      */
 
-    private static void execute(Object bean, Method method, @NotNull EventChannel<MessageEvent> channel) {
+    private static void execute(Object bean, @NotNull Method method, @NotNull EventChannel<MessageEvent> channel) {
         HuYanAuthorize.log.debug("添加消息注册方法->" + method.getName() + " : 消息获取类型->" + method.getParameterTypes()[0].getSimpleName());
         //获取注解信息
         MessageAuthorize annotation = method.getAnnotation(MessageAuthorize.class);
@@ -231,7 +220,7 @@ public class PermissionServer {
             String[] permissions = annotation.userPermissions();
             switch (permissions[0]) {
                 case "null":
-                    quit = quit && true;
+                    quit = quit;
                     break;
                 case "owner":
                     //如果需求主人权限
@@ -332,4 +321,33 @@ public class PermissionServer {
         }
     }
 
+    /**
+     * 获指定路径扫描包信息(旧)
+     *
+     * @param classLoader  类加载器
+     * @param classScanner 类扫描器
+     * @param packagePath  包路径
+     * @return set类集合
+     */
+    @SneakyThrows
+    private Set<Class<?>> reflectiveScan(ClassLoader classLoader, ClassScanner classScanner, String packagePath) {
+        //拿到包扫描反射类
+        Class<ClassScanner> classScannerClass = ClassScanner.class;
+        //获取classload加载的信息
+        Enumeration<URL> resources = classLoader.getResources(packagePath);
+        //进行类扫描
+        EnumerationIter<URL> enumerationIter = new EnumerationIter<>(resources);
+        for (URL url : enumerationIter) {
+            try {
+                Method scanJar = classScannerClass.getDeclaredMethod("scanJar", JarFile.class);
+                scanJar.setAccessible(true);
+                scanJar.invoke(classScanner, URLUtil.getJarFile(url));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        Field classes = classScannerClass.getDeclaredField("classes");
+        classes.setAccessible(true);
+        return (Set<Class<?>>) classes.get(classScanner);
+    }
 }
