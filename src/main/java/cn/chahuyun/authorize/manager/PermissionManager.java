@@ -190,7 +190,7 @@ public class PermissionManager {
                             "and u.groupId = '" + groupId + "' " +
                             "and u.global = false ", UserPermissionInfo.class).list());
         } catch (Exception e) {
-            HuYanAuthorize.log.error(e);
+            HuYanAuthorize.LOGGER.error(e);
             return;
         }
         builder.append(String.format("群成员%s(%s)拥有下列权限:", Objects.requireNonNull(group.get(atId)).getNick(), atId));
@@ -337,7 +337,7 @@ public class PermissionManager {
                             session.remove(singleResult);
                             return true;
                         } catch (Exception e) {
-                            HuYanAuthorize.log.error("群成员基本权限删除失败:", e);
+                            HuYanAuthorize.LOGGER.error("群成员基本权限删除失败:", e);
                             return false;
                         }
                     });

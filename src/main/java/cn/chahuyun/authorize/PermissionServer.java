@@ -79,7 +79,7 @@ public class PermissionServer {
      */
     @SneakyThrows
     public void init(JavaPlugin instance, String packagePath) {
-        MiraiLogger log = HuYanAuthorize.log;
+        MiraiLogger log = HuYanAuthorize.LOGGER;
         //创建一个新的属于该插件的全局EventChannel
         EventChannel<Event> eventEventChannel = GlobalEventChannel.INSTANCE.parentScope(instance);
         //替换包信息
@@ -115,7 +115,9 @@ public class PermissionServer {
                     .filter(method -> method.isAnnotationPresent(MessageAuthorize.class))
                     .filter(method -> {
                         //去掉参数数量不为1的
-                        if (method.getParameterCount() != 1) return false;
+                        if (method.getParameterCount() != 1) {
+                            return false;
+                        }
                         //去掉参数类型不是消息事件的
                         return method.getParameterTypes()[0].isAssignableFrom(method.getAnnotation(MessageAuthorize.class).messageEventType());
                     })
@@ -187,7 +189,7 @@ public class PermissionServer {
      */
 
     private static void execute(Object bean, @NotNull Method method, @NotNull EventChannel<MessageEvent> channel) {
-        HuYanAuthorize.log.debug("添加消息注册方法->" + method.getName() + " : 消息获取类型->" + method.getParameterTypes()[0].getSimpleName());
+        HuYanAuthorize.LOGGER.debug("添加消息注册方法->" + method.getName() + " : 消息获取类型->" + method.getParameterTypes()[0].getSimpleName());
         //获取注解信息
         MessageAuthorize annotation = method.getAnnotation(MessageAuthorize.class);
         //过滤条件
@@ -282,7 +284,7 @@ public class PermissionServer {
                     try {
                         method.invoke(bean, event);
                     } catch (IllegalAccessException | InvocationTargetException e) {
-                        HuYanAuthorize.log.error("消息事件方法执行失败!", e);
+                        HuYanAuthorize.LOGGER.error("消息事件方法执行失败!", e);
                     }
                     return ListeningStatus.LISTENING;
                 });

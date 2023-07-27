@@ -69,7 +69,7 @@ public class UserPermissionInfo {
             HibernateUtil.factory.fromTransaction(session -> session.merge(this));
             return true;
         } catch (Exception e) {
-            HuYanAuthorize.log.error("群成员基本权限添加失败:", e);
+            HuYanAuthorize.LOGGER.error("群成员基本权限添加失败:", e);
             return false;
         }
     }

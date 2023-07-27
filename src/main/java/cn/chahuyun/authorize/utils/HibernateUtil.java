@@ -43,14 +43,14 @@ public class HibernateUtil {
         try {
             factory = configuration.buildSessionFactory();
         } catch (HibernateException e) {
-            HuYanAuthorize.log.error("请删除data中的HuYanAuthorize.mv.db后重新启动！", e);
+            HuYanAuthorize.LOGGER.error("请删除data中的HuYanAuthorize.mv.db后重新启动！", e);
             return;
         }
         PermissionInfo adminPerm = new PermissionInfo("admin", "权限插件的管理员");
         factory.fromTransaction(session -> session.merge(adminPerm));
         PermissionInfo allPerm = new PermissionInfo("all", "除管理员以外的任意其他权限");
         factory.fromTransaction(session -> session.merge(allPerm));
-        HuYanAuthorize.log.info("HuYanAuthorize database initialization succeeded!");
+        HuYanAuthorize.LOGGER.info("HuYanAuthorize database initialization succeeded!");
     }
 
 

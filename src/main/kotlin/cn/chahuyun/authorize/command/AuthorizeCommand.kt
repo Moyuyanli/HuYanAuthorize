@@ -19,11 +19,11 @@ object AuthorizeCommand : CompositeCommand(
     }
 
 
-    @SubCommand("v") // 可以设置多个子指令名。此时函数名会被忽略。
+    @SubCommand("v")
     @Description("查询当前插件版本")
     suspend fun CommandSender.version() {
-        val version = HuYanAuthorize.version
-        sendMessage("壶言会话当前版本: $version")
+        val version = HuYanAuthorize.VERSION
+        sendMessage("壶言鉴权当前版本: $version")
     }
 
 }
