@@ -84,17 +84,30 @@ public class PermissionServer {
         EventChannel<Event> eventEventChannel = GlobalEventChannel.INSTANCE.parentScope(instance);
         //替换包信息
         packagePath = packagePath.replace(".", "/");
+        ClassScanner classScanner = null;
+        ClassLoader classLoader = null;
+        Set<Class<?>> scan = new HashSet<>();
 
-        //扫描包下的类
-        ClassScanner classScanner = new ClassScanner(packagePath, aClass -> aClass.isAnnotationPresent(MessageComponent.class));
-        //获取插件的classloader
-        ClassLoader classLoader = instance.getClass().getClassLoader();
-        classScanner.setClassLoader(classLoader);
-        Set<Class<?>> scan = classScanner.scan();
+        try {
+            //获取插件的classloader
+            classLoader = instance.getClass().getClassLoader();
+            //扫描包下的类
+            classScanner = new ClassScanner(packagePath, aClass -> aClass.isAnnotationPresent(MessageComponent.class));
+            classScanner.setClassLoader(classLoader);
+            scan = classScanner.scan();
+        } catch (Exception e) {
+            log.warning("类扫描错误!");
+            e.printStackTrace();
+        }
 
-        if (scan.isEmpty()) {
+        if (classLoader != null && scan.isEmpty()) {
             log.debug("使用旧的类扫描方式");
             scan = reflectiveScan(classLoader, classScanner, packagePath);
+        }
+
+        if (scan == null || scan.isEmpty()) {
+            log.error("包扫描严重错误!");
+            return;
         }
 
         //获取到对应的类
