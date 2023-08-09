@@ -2,7 +2,7 @@ package cn.chahuyun.authorize.manager;
 
 import cn.chahuyun.authorize.HuYanAuthorize;
 import cn.chahuyun.authorize.annotation.MessageAuthorize;
-import cn.chahuyun.authorize.annotation.MessageComponent;
+import cn.chahuyun.authorize.annotation.EventComponent;
 import cn.chahuyun.authorize.entity.PermissionInfo;
 import cn.chahuyun.authorize.entity.UserPermissionInfo;
 import cn.chahuyun.authorize.enums.MessageMatchingEnum;
@@ -27,7 +27,7 @@ import java.util.Objects;
  * @author Moyuyanli
  * @date 2023/1/3 9:05
  */
-@MessageComponent
+@EventComponent
 public class PermissionManager {
 
 
@@ -263,7 +263,9 @@ public class PermissionManager {
                 //为空则进行二次检查
                 return checkPermission(bot, group, id, code, false);
             } catch (Exception e) {
-                if (group == id) return false;
+                if (group == id) {
+                    return false;
+                }
                 return checkPermission(bot, group, id, code, false);
             }
         } else {

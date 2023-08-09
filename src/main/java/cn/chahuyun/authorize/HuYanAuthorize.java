@@ -9,6 +9,9 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
 import net.mamoe.mirai.utils.MiraiLogger;
 import xyz.cssxsh.mirai.hibernate.MiraiHibernateConfiguration;
 
+/**
+ * @author Moyuyanli
+ */
 public final class HuYanAuthorize extends JavaPlugin {
 
     /**
@@ -18,7 +21,7 @@ public final class HuYanAuthorize extends JavaPlugin {
     /**
      * 全局版本
      */
-    public static final String VERSION = "1.0.1";
+    public static final String VERSION = "1.0.2";
     /**
      * 日志
      */

@@ -1,5 +1,7 @@
 package cn.chahuyun.authorize.annotation;
 
+import cn.chahuyun.authorize.Interface.CustomPattern;
+import cn.chahuyun.authorize.Interface.SimpleCustom;
 import cn.chahuyun.authorize.enums.MessageMatchingEnum;
 import cn.chahuyun.authorize.enums.PermissionMatchingEnum;
 import net.mamoe.mirai.event.ConcurrencyKind;
@@ -27,6 +29,12 @@ public @interface MessageAuthorize {
      * 只会识别第一条正则<p>
      */
     String[] text() default "null";
+
+    /**
+     * 自定义匹配规则
+     * @see CustomPattern
+     */
+    Class<? extends CustomPattern> custom() default SimpleCustom.class;
 
     /**
      * 消息内容匹配方式<p>

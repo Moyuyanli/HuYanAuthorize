@@ -29,11 +29,11 @@
         instance.init(INSTANCE,"cn.chahuyun.authorize.manager");
 ```
 
-再在需要消息监听的类上和方法上分别添加`@MessageComponent`和`@MessageAuthorize`注解
+再在需要消息监听的类上和方法上分别添加`@EventComponent`和`@MessageAuthorize`注解
 
 ```java
 
-@MessageComponent //声明此类中有需要注册消息监听的方法
+@EventComponent //声明此类中有需要注册事件监听的方法
 public class PermissionManager {
 
     @MessageAuthorize(text = "你好")//注册消息监听，具体参数可以查看 MessageAuthorize 注解

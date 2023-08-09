@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'cn.chahuyun'
-version = '1.0.1'
+version = '1.0.2'
 
 repositories {
     maven { url 'https://maven.aliyun.com/repository/public' }
@@ -22,7 +22,8 @@ dependencies {
     implementation 'org.projectlombok:lombok:1.18.26'
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.26'
 
-    implementation 'cn.hutool:hutool-core:5.8.18'
+    implementation 'cn.hutool:hutool-all:5.8.20'
+    implementation 'cglib:cglib:3.3.0'
     //测试库
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
 }

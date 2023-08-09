@@ -14,6 +14,9 @@ public enum MessageMatchingEnum {
     /**
      * 正则匹配
      */
-    REGULAR;
-
+    REGULAR,
+    /**
+     * 自定义
+     */
+    CUSTOM
 }
