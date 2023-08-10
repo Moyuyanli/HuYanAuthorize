@@ -21,7 +21,7 @@ public final class HuYanAuthorize extends JavaPlugin {
     /**
      * 全局版本
      */
-    public static final String VERSION = "1.0.2";
+    public static final String VERSION = "1.0.3";
     /**
      * 日志
      */

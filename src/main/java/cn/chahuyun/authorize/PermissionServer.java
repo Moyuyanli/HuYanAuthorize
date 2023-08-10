@@ -114,19 +114,23 @@ public class PermissionServer {
         scan.forEach(aClass -> {
             log.debug("已扫描到消息注册类->" + aClass.getName());
             //尝试实例化该类
-            Object newInstance;
+            Object newInstance = null;
             try {
-                newInstance = ProxyUtil.proxy(aClass, TimeSectionOperation.class);
-//                newInstance = aClass.getConstructor().newInstance();
+                newInstance = proxy(aClass);
+                if (newInstance == null) {
+                    log.debug("使用旧方法构建实例");
+                    newInstance = aClass.getConstructor().newInstance();
+                }
             } catch (Exception e) {
                 log.error("注册类:" + aClass.getName() + "实例化失败!");
-                return;
             }
+
             //过滤类里面的方法
+            Object finalNewInstance = newInstance;
             Arrays.stream(aClass.getMethods())
                     .filter(FilterUtil::methodCheckMessage)
                     //检查权限消息后注册
-                    .forEach(it -> execute(newInstance, it, eventEventChannel.filterIsInstance(MessageEvent.class)));
+                    .forEach(it -> execute(finalNewInstance, it, eventEventChannel.filterIsInstance(MessageEvent.class)));
         });
         log.info("HuYanAuthorize message event registration succeeded !");
     }
@@ -225,6 +229,7 @@ public class PermissionServer {
      * @param packagePath  包路径
      * @return set类集合
      */
+    @Deprecated
     @SneakyThrows
     private Set<Class<?>> reflectiveScan(ClassLoader classLoader, ClassScanner classScanner, String packagePath) {
         //拿到包扫描反射类
@@ -300,6 +305,21 @@ public class PermissionServer {
         }
         return messageMatching;
 
+    }
+
+    /**
+     * 通过代理构建实例
+     *
+     * @param aClass 类
+     * @return 实例
+     */
+    @Deprecated
+    private Object proxy(Class<?> aClass) {
+        try {
+            return ProxyUtil.proxy(aClass.getConstructor().newInstance(), TimeSectionOperation.class);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 }
