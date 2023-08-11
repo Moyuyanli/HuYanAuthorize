@@ -1,5 +1,6 @@
-package cn.chahuyun.authorize.Interface;
+package cn.chahuyun.authorize.Interface.impl;
 
+import cn.chahuyun.authorize.Interface.CustomPattern;
 import net.mamoe.mirai.event.Event;
 
 /**
@@ -8,7 +9,7 @@ import net.mamoe.mirai.event.Event;
  * @author Moyuyanli
  * @date 2023/8/8 9:46
  */
-public class SimpleCustom implements CustomPattern{
+public class SimpleCustom implements CustomPattern {
 
     /**
      * 一个自定义匹配规则

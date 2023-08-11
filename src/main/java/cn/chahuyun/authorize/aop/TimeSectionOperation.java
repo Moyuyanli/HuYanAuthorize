@@ -40,7 +40,9 @@ public class TimeSectionOperation implements Aspect {
      */
     @Override
     public boolean after(Object target, Method method, Object[] args, Object returnVal) {
-        String format = String.format("类: %s 执行方法: %s 用时: %d ms", target.getClass().getName(), method.getName(), interval.intervalMs());
+        String beanName = args[0].getClass().getName();
+        Method beanMethod = (Method) args[1];
+        String format = String.format("类:[%s]执行方法:[%s]用时:[%d]ms", beanName, beanMethod.getName(), interval.intervalMs());
         HuYanAuthorize.LOGGER.debug(format);
         return true;
     }
@@ -56,10 +58,11 @@ public class TimeSectionOperation implements Aspect {
      */
     @Override
     public boolean afterException(Object target, Method method, Object[] args, Throwable e) {
-        String format = String.format("类: %s 执行方法: %s 错误!", target.getClass().getName(), method.getName());
+        String beanName = args[0].getClass().getName();
+        Method beanMethod = (Method) args[1];
+        String format = String.format("类:[%s]执行方法:[%s]错误!", beanName, beanMethod.getName());
         HuYanAuthorize.LOGGER.error(format);
         return false;
     }
-
 
 }

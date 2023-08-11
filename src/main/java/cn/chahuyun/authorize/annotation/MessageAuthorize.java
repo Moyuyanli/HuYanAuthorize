@@ -1,12 +1,11 @@
 package cn.chahuyun.authorize.annotation;
 
 import cn.chahuyun.authorize.Interface.CustomPattern;
-import cn.chahuyun.authorize.Interface.SimpleCustom;
+import cn.chahuyun.authorize.Interface.impl.SimpleCustom;
 import cn.chahuyun.authorize.enums.MessageMatchingEnum;
 import cn.chahuyun.authorize.enums.PermissionMatchingEnum;
 import net.mamoe.mirai.event.ConcurrencyKind;
 import net.mamoe.mirai.event.EventPriority;
-import net.mamoe.mirai.event.events.MessageEvent;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -71,12 +70,6 @@ public @interface MessageAuthorize {
      * @see PermissionMatchingEnum
      */
     PermissionMatchingEnum groupPermissionsMatching() default PermissionMatchingEnum.OR;
-
-    /**
-     * 默认消息类型<p>
-     * 默认:{@link MessageEvent}<p>
-     */
-    Class<? extends MessageEvent> messageEventType() default MessageEvent.class;
 
     /**
      * 优先级<p>

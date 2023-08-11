@@ -1,6 +1,6 @@
 package cn.chahuyun.authorize.manager;
 
-import cn.chahuyun.authorize.annotation.GroupAuthorize;
+import cn.chahuyun.authorize.annotation.EventAuthorize;
 import cn.chahuyun.authorize.annotation.MessageAuthorize;
 
 import java.lang.annotation.Annotation;
@@ -18,7 +18,7 @@ public class AnnotationsManager extends ArrayList<Class<? extends Annotation>> {
 
     static {
         INSTANCE.add(MessageAuthorize.class);
-        INSTANCE.add(GroupAuthorize.class);
+        INSTANCE.add(EventAuthorize.class);
     }
 
     public static AnnotationsManager getInstance() {

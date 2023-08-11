@@ -1,39 +1,27 @@
 package cn.chahuyun.authorize;
 
-import cn.chahuyun.authorize.Interface.CustomPattern;
 import cn.chahuyun.authorize.annotation.EventComponent;
 import cn.chahuyun.authorize.annotation.MessageAuthorize;
-import cn.chahuyun.authorize.aop.TimeSectionOperation;
 import cn.chahuyun.authorize.entity.PermissionInfo;
-import cn.chahuyun.authorize.enums.MessageMatchingEnum;
+import cn.chahuyun.authorize.listening.impl.MessageFilter;
 import cn.chahuyun.authorize.manager.PermissionManager;
-import cn.chahuyun.authorize.utils.FilterUtil;
 import cn.chahuyun.authorize.utils.HibernateUtil;
-import cn.hutool.aop.ProxyUtil;
 import cn.hutool.core.collection.EnumerationIter;
-import cn.hutool.core.exceptions.UtilException;
 import cn.hutool.core.lang.ClassScanner;
-import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.URLUtil;
-import kotlin.coroutines.EmptyCoroutineContext;
 import lombok.SneakyThrows;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.event.Event;
 import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.GlobalEventChannel;
-import net.mamoe.mirai.event.ListeningStatus;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiLogger;
-import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 import java.util.jar.JarFile;
-import java.util.regex.Pattern;
 
 /**
  * 权限服务
@@ -109,29 +97,7 @@ public class PermissionServer {
             log.error("包扫描严重错误，请检查包路径或注解!");
             return;
         }
-
-        //获取到对应的类
-        scan.forEach(aClass -> {
-            log.debug("已扫描到消息注册类->" + aClass.getName());
-            //尝试实例化该类
-            Object newInstance = null;
-            try {
-                newInstance = proxy(aClass);
-                if (newInstance == null) {
-                    log.debug("使用旧方法构建实例");
-                    newInstance = aClass.getConstructor().newInstance();
-                }
-            } catch (Exception e) {
-                log.error("注册类:" + aClass.getName() + "实例化失败!");
-            }
-
-            //过滤类里面的方法
-            Object finalNewInstance = newInstance;
-            Arrays.stream(aClass.getMethods())
-                    .filter(FilterUtil::methodCheckMessage)
-                    //检查权限消息后注册
-                    .forEach(it -> execute(finalNewInstance, it, eventEventChannel.filterIsInstance(MessageEvent.class)));
-        });
+        MessageFilter.register(scan, eventEventChannel.filterIsInstance(MessageEvent.class));
         log.info("HuYanAuthorize message event registration succeeded !");
     }
 
@@ -188,38 +154,6 @@ public class PermissionServer {
 
     //  ====================================   private   ==========================================
 
-    /**
-     * 过滤消息，进行事件监听注册注册
-     *
-     * @param bean    实体
-     * @param method  方法
-     * @param channel 监听channel
-     * @author Moyuyanli
-     * @date 2023/1/3 11:15
-     */
-
-    private void execute(Object bean, @NotNull Method method, @NotNull EventChannel<MessageEvent> channel) {
-        HuYanAuthorize.LOGGER.debug("添加消息注册方法->" + method.getName() + " : 消息获取类型->" + method.getParameterTypes()[0].getSimpleName());
-        //获取注解信息
-        MessageAuthorize annotation = method.getAnnotation(MessageAuthorize.class);
-        //过滤条件
-        channel.filter(event -> FilterUtil.eventCheckPermission(event, annotation))
-                .filter(event -> messageMate(event, annotation))
-                .subscribe(
-                        annotation.messageEventType(),
-                        EmptyCoroutineContext.INSTANCE,
-                        annotation.concurrency(),
-                        annotation.priority(),
-                        event -> {
-                            try {
-                                method.invoke(bean, event);
-                            } catch (IllegalAccessException | InvocationTargetException e) {
-                                HuYanAuthorize.LOGGER.error("消息事件方法执行失败!", e);
-                            }
-                            return ListeningStatus.LISTENING;
-                        });
-    }
-
 
     /**
      * 获指定路径扫描包信息(旧)
@@ -252,74 +186,5 @@ public class PermissionServer {
         return (Set<Class<?>>) classes.get(classScanner);
     }
 
-    /**
-     * 匹配消息
-     *
-     * @param event      消息事件
-     * @param annotation 注解
-     * @return boolean
-     */
-    private boolean messageMate(MessageEvent event, MessageAuthorize annotation) {
-        //消息判断
-        MessageChain message = event.getMessage();
-        String code = message.serializeToMiraiCode();
-
-        MessageMatchingEnum matching = annotation.messageMatching();
-        String[] text = annotation.text();
-
-        //消息匹配默认为否
-        boolean messageMatching = false;
-
-        switch (matching) {
-            case TEXT:
-                for (String messageString : text) {
-                    //替换第一个#   [#] 请用 [##] 转意
-                    messageString = messageString.replaceFirst("#", "");
-                    if (code.equals(messageString)) {
-                        messageMatching = true;
-                        break;
-                    }
-                }
-                break;
-            case REGULAR:
-                messageMatching = Pattern.matches(text[0], code);
-                break;
-            case CUSTOM:
-                Class<? extends CustomPattern> custom = annotation.custom();
-                try {
-                    messageMatching = ReflectUtil.invoke(custom, "custom", event);
-                } catch (UtilException e) {
-                    HuYanAuthorize.LOGGER.error("使用自定义匹配异常!", e);
-                    return false;
-                }
-                break;
-            default:
-                return false;
-        }
-            /*
-            如果为 空(null)  则消息过滤直接通过
-            如果需要判断[null] 请加 [#]  ->  [#null]
-             */
-        if (text.length == 1) {
-            messageMatching = "null".equals(text[0]) || messageMatching;
-        }
-        return messageMatching;
-
-    }
-
-    /**
-     * 通过代理构建实例
-     *
-     * @param aClass 类
-     * @return 实例
-     */
-    @Deprecated
-    private Object proxy(Class<?> aClass) {
-        try {
-            return ProxyUtil.proxy(aClass.getConstructor().newInstance(), TimeSectionOperation.class);
-        } catch (Exception e) {
-            return null;
-        }
-    }
 
 }

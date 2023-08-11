@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'cn.chahuyun'
-version = '1.0.3'
+version = '1.0.4'
 
 repositories {
     maven { url 'https://maven.aliyun.com/repository/public' }
@@ -17,7 +17,6 @@ repositories {
 dependencies {
     //依赖
     compileOnly 'xyz.cssxsh.mirai:mirai-hibernate-plugin:2.7.1'
-    compileOnly 'cglib:cglib:3.3.0'
     //使用库
     implementation 'org.projectlombok:lombok:1.18.26'
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.26'

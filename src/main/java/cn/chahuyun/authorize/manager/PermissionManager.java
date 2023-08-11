@@ -11,6 +11,7 @@ import cn.chahuyun.authorize.utils.QueryUtil;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
+import net.mamoe.mirai.event.events.BotOnlineEvent;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.At;
@@ -40,8 +41,7 @@ public class PermissionManager {
      */
     @MessageAuthorize(
             text = "^[+|-]\\[mirai:at:\\d+]( +\\S+){1,5}", messageMatching = MessageMatchingEnum.REGULAR,
-            userPermissions = "admin",
-            messageEventType = GroupMessageEvent.class
+            userPermissions = "admin"
     )
     public void controlMemberPermission(GroupMessageEvent event) {
         Contact subject = event.getSubject();
@@ -122,8 +122,7 @@ public class PermissionManager {
 
     @MessageAuthorize(
             text = "^[+|-]group( +\\S+){1,5}", messageMatching = MessageMatchingEnum.REGULAR,
-            userPermissions = "admin",
-            messageEventType = GroupMessageEvent.class
+            userPermissions = "admin"
     )
     public void controlGroupPermission(GroupMessageEvent event) {
         long botId = event.getBot().getId();
@@ -159,8 +158,7 @@ public class PermissionManager {
      */
     @MessageAuthorize(
             text = "[!！]prem ?\\[mirai:at:\\d+]", messageMatching = MessageMatchingEnum.REGULAR,
-            userPermissions = "admin",
-            messageEventType = GroupMessageEvent.class
+            userPermissions = "admin"
     )
     public void viewMemberPermission(GroupMessageEvent event) {
         long botId = event.getBot().getId();
@@ -199,8 +197,7 @@ public class PermissionManager {
 
     @MessageAuthorize(
             text = "测试",
-            userPermissions = "admin",
-            messageEventType = GroupMessageEvent.class
+            userPermissions = "admin"
     )
     public void test(GroupMessageEvent event) {
         event.getSubject().sendMessage("成功");
