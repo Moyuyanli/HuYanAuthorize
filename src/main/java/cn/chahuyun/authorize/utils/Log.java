@@ -18,7 +18,7 @@ public class Log {
      * 替换日志打印插件
      * @param instance 插件本身
      */
-    private static void init(JavaPlugin instance) {
+    public static void init(JavaPlugin instance) {
         LOGGER = instance.getLogger();
     }
 
