@@ -15,4 +15,7 @@ object AuthorizeConfig : AutoSavePluginConfig("AuthorizeConfig") {
     @ValueDescription("主人\n")
     var owner: Long by value()
 
+    @ValueDescription("是否开启方法代理")
+    var proxySwitch : Boolean by value(false)
+
 }

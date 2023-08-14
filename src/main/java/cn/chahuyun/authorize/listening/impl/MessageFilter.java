@@ -11,6 +11,7 @@ import cn.chahuyun.authorize.enums.PermissionMatchingEnum;
 import cn.chahuyun.authorize.listening.Filter;
 import cn.chahuyun.authorize.manager.PermissionManager;
 import cn.chahuyun.authorize.utils.Log;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.exceptions.UtilException;
 import cn.hutool.core.util.ReflectUtil;
 import kotlin.coroutines.EmptyCoroutineContext;
@@ -120,10 +121,16 @@ public class MessageFilter implements Filter {
                         EmptyCoroutineContext.INSTANCE,
                         annotation.concurrency(),
                         annotation.priority(),
-                        event ->
-                                JavaBeanProxy.getInstance().register(bean, method, event) ?
+                        event -> {
+                            if (AuthorizeConfig.INSTANCE.getProxySwitch()) {
+                                return JavaBeanProxy.getInstance().register(bean, method, event) ?
                                         ListeningStatus.LISTENING :
-                                        ListeningStatus.STOPPED);
+                                        ListeningStatus.STOPPED;
+                            } else {
+                                ReflectUtil.invoke(bean, method, event);
+                                return ListeningStatus.LISTENING;
+                            }
+                        });
     }
 
 
