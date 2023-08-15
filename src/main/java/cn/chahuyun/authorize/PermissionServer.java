@@ -6,6 +6,7 @@ import cn.chahuyun.authorize.entity.PermissionInfo;
 import cn.chahuyun.authorize.listening.impl.MessageFilter;
 import cn.chahuyun.authorize.manager.PermissionManager;
 import cn.chahuyun.authorize.utils.HibernateUtil;
+import cn.chahuyun.authorize.utils.Log;
 import cn.hutool.core.collection.EnumerationIter;
 import cn.hutool.core.lang.ClassScanner;
 import cn.hutool.core.util.URLUtil;
@@ -16,6 +17,7 @@ import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.utils.MiraiLogger;
+import org.hibernate.query.Query;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -136,19 +138,27 @@ public class PermissionServer {
             add("all");
         }};
         if (defaultPermissions.contains(code)) {
+            Log.warning("禁止使用插件权限种！");
             return false;
         }
         try {
-            HibernateUtil.factory.fromSession(session -> session.get(PermissionInfo.class, code));
-            return false;
-        } catch (Exception e) {
-            PermissionInfo permissionInfo = new PermissionInfo(code, description);
-            try {
-                HibernateUtil.factory.fromTransaction(session -> session.merge(permissionInfo));
-                return true;
-            } catch (Exception ex) {
+            Query<PermissionInfo> query = HibernateUtil.factory.fromSession(session -> session.createQuery("select * from PERMISSIONINFO as u where u.code = '" + code +"'", PermissionInfo.class));
+            if (query.getSingleResult() == null) {
+                Log.debug("新权限%s,进行添加",code);
+            } else {
+                Log.debug("权限%s已存在",code);
                 return false;
             }
+        } catch (Exception ignored) {
+            Log.debug("查询权限%s出错!",code);
+        }
+        PermissionInfo permissionInfo = new PermissionInfo(code, description);
+        try {
+            HibernateUtil.factory.fromTransaction(session -> session.merge(permissionInfo));
+            Log.debug("权限%s添加成功!",code);
+            return true;
+        } catch (Exception ex) {
+            return false;
         }
     }
 

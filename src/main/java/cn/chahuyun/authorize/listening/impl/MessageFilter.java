@@ -11,7 +11,6 @@ import cn.chahuyun.authorize.enums.PermissionMatchingEnum;
 import cn.chahuyun.authorize.listening.Filter;
 import cn.chahuyun.authorize.manager.PermissionManager;
 import cn.chahuyun.authorize.utils.Log;
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.exceptions.UtilException;
 import cn.hutool.core.util.ReflectUtil;
 import kotlin.coroutines.EmptyCoroutineContext;
@@ -60,7 +59,9 @@ public class MessageFilter implements Filter {
     public static void register(Set<Class<?>> classes, EventChannel<MessageEvent> channel) {
         MessageFilter register = new MessageFilter();
         register.setChannel(channel);
-
+        /*
+         * 类过滤
+         */
         for (Class<?> aClass : classes) {
             LOGGER.debug("已扫描到消息注册类->" + aClass.getName());
             //尝试实例化该类
@@ -87,16 +88,19 @@ public class MessageFilter implements Filter {
      */
     @Override
     public void filter(Stream<Method> stream, Object instance) {
-        stream.filter(it->it.isAnnotationPresent(MessageAuthorize.class) && it.getParameterCount() == 1)
+        /*
+        参数类型和方法过滤
+         */
+        stream.filter(it -> it.isAnnotationPresent(MessageAuthorize.class) && it.getParameterCount() == 1)
                 .forEach(it -> {
-            Class<?> parameterType = it.getParameterTypes()[0];
-            if (parameterType.isAssignableFrom(MessageEvent.class)) {
-                Class<? extends MessageEvent> methodType = parameterType.asSubclass(MessageEvent.class);
-                execute(instance, it, channel.filterIsInstance(methodType), methodType);
-            } else {
-                Log.warning("类[%s]中方法[%s]的参数类型异常，请检查!", instance.getClass().getName(), it.getName());
-            }
-        });
+                    Class<?> parameterType = it.getParameterTypes()[0];
+                    if (MessageEvent.class.isAssignableFrom(parameterType)) {
+                        Class<? extends MessageEvent> methodType = parameterType.asSubclass(MessageEvent.class);
+                        execute(instance, it, channel.filterIsInstance(methodType), methodType);
+                    } else {
+                        Log.warning("类[%s]中方法[%s]的参数类型异常，请检查!", instance.getClass().getName(), it.getName());
+                    }
+                });
     }
 
     /**
@@ -127,7 +131,12 @@ public class MessageFilter implements Filter {
                                         ListeningStatus.LISTENING :
                                         ListeningStatus.STOPPED;
                             } else {
-                                ReflectUtil.invoke(bean, method, event);
+                                try {
+                                    method.invoke(bean, event);
+                                } catch (Exception e) {
+                                    Log.error("类[%s]方法[%s]执行错误:%s", bean.getClass().getName(), method.getName(), e.getMessage());
+                                    e.printStackTrace();
+                                }
                                 return ListeningStatus.LISTENING;
                             }
                         });
@@ -141,7 +150,9 @@ public class MessageFilter implements Filter {
      * @return boolean
      */
     private boolean eventCheckPermission(MessageEvent event, MessageAuthorize authorize) {
-
+        /*
+        权限过滤
+         */
         Bot bot = event.getBot();
         User sender = event.getSender();
 
@@ -216,12 +227,11 @@ public class MessageFilter implements Filter {
             case CUSTOM:
                 Class<? extends CustomPattern> custom = annotation.custom();
                 try {
-                    messageMatching = ReflectUtil.invoke(ReflectUtil.newInstance(custom), "custom", event);
+                    return ReflectUtil.invoke(ReflectUtil.newInstance(custom), "custom", event);
                 } catch (UtilException e) {
                     HuYanAuthorize.LOGGER.error("使用自定义匹配异常!", e);
                     return false;
                 }
-                break;
             default:
                 return false;
         }

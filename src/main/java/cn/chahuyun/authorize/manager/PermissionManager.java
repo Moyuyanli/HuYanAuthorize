@@ -195,6 +195,44 @@ public class PermissionManager {
         subject.sendMessage(viewPermissions(userPermissionInfos, builder));
     }
 
+
+    /**
+     * 查看群成员权限<p>
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2023/1/6 18:20
+     */
+    @MessageAuthorize(
+            text = "[!！]prem ?group", messageMatching = MessageMatchingEnum.REGULAR,
+            userPermissions = "admin"
+    )
+    public void viewGroupPermission(GroupMessageEvent event) {
+        long botId = event.getBot().getId();
+        MessageChain message = event.getMessage();
+        Group subject = event.getSubject();
+        Group group = event.getGroup();
+        long groupId = group.getId();
+        MessageChainBuilder builder = QueryUtil.quoteReply(message);
+
+
+        List<UserPermissionInfo> userPermissionInfos;
+        try {
+            userPermissionInfos = HibernateUtil.factory.fromSession(session -> session.createQuery(
+                    "from UserPermissionInfo as u " +
+                            "where u.bot ='" + botId + "' " +
+                            "and u.qq = '" + groupId + "' " +
+                            "and u.groupId = '" + groupId + "' " +
+                            "and u.global = false ", UserPermissionInfo.class).list());
+        } catch (Exception e) {
+            HuYanAuthorize.LOGGER.error(e);
+            return;
+        }
+        builder.append(String.format("群成%s(%s)拥有下列权限:", group.getName(),groupId));
+        subject.sendMessage(viewPermissions(userPermissionInfos, builder));
+    }
+
+
     @MessageAuthorize(
             text = "测试",
             userPermissions = "admin"
