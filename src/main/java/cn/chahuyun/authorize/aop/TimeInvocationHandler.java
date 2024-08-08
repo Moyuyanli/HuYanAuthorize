@@ -1,6 +1,5 @@
 package cn.chahuyun.authorize.aop;
 
-import cn.chahuyun.authorize.HuYanAuthorize;
 import cn.chahuyun.authorize.register.Register;
 import cn.chahuyun.authorize.utils.Log;
 import cn.hutool.core.date.TimeInterval;

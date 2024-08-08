@@ -1,8 +1,7 @@
 package cn.chahuyun.authorize.manager;
 
-import cn.chahuyun.authorize.HuYanAuthorize;
-import cn.chahuyun.authorize.annotation.MessageAuthorize;
 import cn.chahuyun.authorize.annotation.EventComponent;
+import cn.chahuyun.authorize.annotation.MessageAuthorize;
 import cn.chahuyun.authorize.entity.PermissionInfo;
 import cn.chahuyun.authorize.entity.UserPermissionInfo;
 import cn.chahuyun.authorize.enums.MessageMatchingEnum;
@@ -11,7 +10,6 @@ import cn.chahuyun.authorize.utils.QueryUtil;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
-import net.mamoe.mirai.event.events.BotOnlineEvent;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.At;

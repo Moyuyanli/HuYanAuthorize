@@ -1,6 +1,5 @@
 package cn.chahuyun.authorize.aop;
 
-import cn.chahuyun.authorize.HuYanAuthorize;
 import cn.hutool.aop.aspects.Aspect;
 import cn.hutool.core.date.TimeInterval;
 

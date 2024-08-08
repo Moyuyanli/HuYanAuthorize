@@ -1,6 +1,5 @@
 package cn.chahuyun.authorize.entity;
 
-import cn.chahuyun.authorize.HuYanAuthorize;
 import cn.chahuyun.authorize.utils.HibernateUtil;
 import jakarta.persistence.*;
 import lombok.Data;

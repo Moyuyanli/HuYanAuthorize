@@ -1,6 +1,5 @@
 package cn.chahuyun.authorize.utils;
 
-import cn.chahuyun.authorize.HuYanAuthorize;
 import cn.chahuyun.authorize.entity.PermissionInfo;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;

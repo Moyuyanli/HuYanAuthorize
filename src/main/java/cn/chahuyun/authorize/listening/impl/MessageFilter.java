@@ -1,6 +1,5 @@
 package cn.chahuyun.authorize.listening.impl;
 
-import cn.chahuyun.authorize.HuYanAuthorize;
 import cn.chahuyun.authorize.Interface.CustomPattern;
 import cn.chahuyun.authorize.annotation.MessageAuthorize;
 import cn.chahuyun.authorize.aop.JavaBeanProxy;
