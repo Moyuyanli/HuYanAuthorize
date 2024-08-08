@@ -3,6 +3,7 @@ package cn.chahuyun.authorize;
 import cn.chahuyun.authorize.command.AuthorizeCommand;
 import cn.chahuyun.authorize.config.AuthorizeConfig;
 import cn.chahuyun.authorize.utils.HibernateUtil;
+import cn.chahuyun.hibernateplus.HibernatePlusService;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
@@ -43,6 +44,8 @@ public final class HuYanAuthorize extends JavaPlugin {
         //加载指令
         CommandManager.INSTANCE.registerCommand(AuthorizeCommand.INSTANCE, true);
         //加载配置
+        HibernatePlusService.loadingService();
+
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);
         //初始化插件数据库
         HibernateUtil.init(configuration);
