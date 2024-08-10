@@ -22,3 +22,5 @@ public interface Filter {
     void filter(Stream<Method> stream,Object instance);
 
 }
+
+
