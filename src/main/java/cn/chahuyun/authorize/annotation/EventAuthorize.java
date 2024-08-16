@@ -1,6 +1,5 @@
 package cn.chahuyun.authorize.annotation;
 
-import cn.chahuyun.authorize.Interface.CustomPattern;
 import cn.chahuyun.authorize.Interface.impl.SimpleCustom;
 import net.mamoe.mirai.event.ConcurrencyKind;
 import net.mamoe.mirai.event.EventPriority;

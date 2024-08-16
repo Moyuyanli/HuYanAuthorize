@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    implementation("cn.chahuyun:hibernate-plus:1.0.7")
+    implementation("cn.chahuyun:hibernate-plus:1.0.15")
     implementation("org.projectlombok:lombok:1.18.26")
     annotationProcessor("org.projectlombok:lombok:1.18.26")
 }

@@ -1,6 +1,5 @@
 package cn.chahuyun.authorize.annotation;
 
-import cn.chahuyun.authorize.Interface.CustomPattern;
 import cn.chahuyun.authorize.Interface.impl.SimpleCustom;
 import cn.chahuyun.authorize.enums.MessageMatchingEnum;
 import cn.chahuyun.authorize.enums.PermissionMatchingEnum;

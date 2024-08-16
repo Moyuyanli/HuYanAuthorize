@@ -1,10 +1,8 @@
 package cn.chahuyun.authorize.listening.impl;
 
-import cn.chahuyun.authorize.Interface.CustomPattern;
 import cn.chahuyun.authorize.annotation.MessageAuthorize;
 import cn.chahuyun.authorize.aop.JavaBeanProxy;
 import cn.chahuyun.authorize.config.AuthorizeConfig;
-import cn.chahuyun.authorize.constant.PermConstant;
 import cn.chahuyun.authorize.enums.MessageMatchingEnum;
 import cn.chahuyun.authorize.enums.PermissionMatchingEnum;
 import cn.chahuyun.authorize.listening.Filter;
