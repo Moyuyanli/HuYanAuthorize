@@ -1,6 +1,5 @@
 package cn.chahuyun.authorize.Interface.impl;
 
-import cn.chahuyun.authorize.Interface.CustomPattern;
 import net.mamoe.mirai.event.Event;
 
 /**

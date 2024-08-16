@@ -25,7 +25,7 @@ class HuYanAuthorize : KotlinPlugin(
 ) {
     companion object {
         val INSTANCE: HuYanAuthorize = HuYanAuthorize()
-        const val VERSION = "1.0.7"
+        const val VERSION = "1.0.8"
         val LOGGER: MiraiLogger = INSTANCE.logger
     }
 
@@ -39,7 +39,7 @@ class HuYanAuthorize : KotlinPlugin(
         // 初始化插件数据库
 
         // 添加本插件的注册消息包信息
-        PermissionServer.getInstance().init(this, "cn.chahuyun.authorize.manager")
+        PermissionServer.instance.init(this, "cn.chahuyun.authorize.manager")
         LOGGER.info("HuYanAuthorize plugin loaded!")
     }
 
