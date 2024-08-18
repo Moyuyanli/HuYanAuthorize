@@ -1,10 +1,8 @@
 package cn.chahuyun.authorize.constant
 
-<<<<<<< HEAD
+
 import lombok.Getter
 
-=======
->>>>>>> origin/dev
 /**
  * 匹配方式枚举
  *
@@ -95,8 +93,6 @@ enum class UserType(private val valueTemplate: String) {
 
 
 /**
-=======
->>>>>>> origin/dev
  * 权限常量
  *
  * @author Moyuyanli
@@ -121,10 +117,9 @@ object PermConstant {
 
 }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/dev
+/**
+ * 日志常量
+ */
 object LogTopic {
 
     /**
