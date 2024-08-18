@@ -1,5 +1,10 @@
 package cn.chahuyun.authorize.constant
 
+<<<<<<< HEAD
+import lombok.Getter
+
+=======
+>>>>>>> origin/dev
 /**
  * 匹配方式枚举
  *
@@ -48,6 +53,50 @@ enum class PermissionMatchingEnum {
 
 
 /**
+ * 作用域类型
+ */
+@Getter
+enum class UserType(private val valueTemplate: String) {
+    /**
+     * 全局
+     */
+    GLOBAL("global"),
+
+    /**
+     * 全局用户
+     */
+    GLOBAL_USER("global-%d"),
+
+    /**
+     * 群
+     */
+    GROUP("group-%d"),
+
+    /**
+     * 群用户
+     */
+    GROUP_MEMBER("group-%d-member-%d"),
+
+    /**
+     * 群分组用户
+     */
+    GROUP_MEMBERS("group-%d-membersName-%s"),
+
+    /**
+     * 分组群
+     */
+    LIST("list-%s"),
+
+    /**
+     * 分组用户
+     */
+    USERS("users-%s")
+}
+
+
+/**
+=======
+>>>>>>> origin/dev
  * 权限常量
  *
  * @author Moyuyanli
@@ -72,6 +121,10 @@ object PermConstant {
 
 }
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/dev
 object LogTopic {
 
     /**

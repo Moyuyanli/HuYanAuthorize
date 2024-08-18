@@ -6,7 +6,6 @@ import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.console.plugin.jvm.reloadPluginConfig
-import net.mamoe.mirai.utils.MiraiLogger
 
 
 /**
@@ -50,12 +49,10 @@ class HuYanAuthorize : KotlinPlugin(
         reloadPluginConfig(AuthorizeConfig)
         // 加载指令
         CommandManager.registerCommand(AuthorizeCommand, true)
-        // 加载配置
-
         // 初始化插件数据库
-
+        DataManager.init(this)
         // 添加本插件的注册消息包信息
-        PermissionServer.getInstance().init(this, "cn.chahuyun.authorize.manager")
+        PermissionServer.instance.init(this, "cn.chahuyun.authorize.manager")
         LOGGER.info("HuYanAuthorize plugin loaded!")
     }
 

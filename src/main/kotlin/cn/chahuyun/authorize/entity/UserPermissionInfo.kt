@@ -3,6 +3,7 @@ package cn.chahuyun.authorize.entity
 import cn.chahuyun.authorize.constant.UserType
 import jakarta.persistence.*
 
+
 @Entity(name = "auth_user_permission")
 @Table(name = "auth_user_permission")
 data class UserPermissionInfo(
