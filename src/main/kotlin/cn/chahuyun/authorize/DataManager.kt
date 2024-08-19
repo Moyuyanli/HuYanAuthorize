@@ -7,7 +7,6 @@ import cn.chahuyun.authorize.config.AuthorizeConfig.mysqlPassword
 import cn.chahuyun.authorize.config.AuthorizeConfig.mysqlUrl
 import cn.chahuyun.authorize.config.AuthorizeConfig.mysqlUser
 import cn.chahuyun.authorize.utils.Log
-import cn.chahuyun.hibernateplus.DriveType
 import cn.chahuyun.hibernateplus.DriveType.*
 import cn.chahuyun.hibernateplus.HibernatePlusService
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
@@ -30,12 +29,8 @@ class DataManager {
                     configuration.user = mysqlUser
                     configuration.password = mysqlPassword
                 }
-                H2 -> TODO()
-                SQLITE -> TODO()
-            }
-
-            if (dataType == MYSQL) {
-
+                H2 -> configuration.address = HuYanAuthorize.INSTANCE.dataFolderPath.resolve("authorize.h2.mv.db").toString()
+                SQLITE -> configuration.address = HuYanAuthorize.INSTANCE.dataFolderPath.resolve("authorize.mv.db").toString()
             }
 
             HibernatePlusService.loadingService(configuration)

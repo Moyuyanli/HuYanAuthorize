@@ -34,9 +34,10 @@ data class User(
      * 创建时间
      */
     var createTime: Date? = null,
-    /**
-     * 权限组
-     */
-    @ManyToOne
-    var permGroup: PermGroup? = null,
-)
+
+    ) {
+    override fun toString(): String {
+        return "User(id=$id, type=$type, groupId=$groupId, userId=$userId, createTime=$createTime)"
+    }
+
+}

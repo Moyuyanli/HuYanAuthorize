@@ -7,8 +7,8 @@ import jakarta.persistence.*
  *
  * @author moyuyanli
  */
-@Entity(name = "perm_group")
-@Table(name = "perm_group")
+@Entity(name = "auth_perm_group")
+@Table(name = "auth_perm_group")
 data class PermGroup(
     /**
      * id
@@ -21,14 +21,27 @@ data class PermGroup(
      */
     var parentId: Int? = null,
     /**
+     * 分组名称
+     */
+    var name: String? = null,
+    /**
      * 权限列表
      */
-    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    var code: MutableList<Perm> = mutableListOf(),
+    @ManyToMany(cascade = [CascadeType.PERSIST, CascadeType.MERGE], fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "auth_perm_group_map_perm",
+        joinColumns = [JoinColumn(name = "perm_group_id")],
+        inverseJoinColumns = [JoinColumn(name = "code_id")]
+    )
+    var perms: MutableSet<Perm> = mutableSetOf(),
     /**
      * 用户列表
      */
-    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    var user: MutableList<User> = mutableListOf(),
-
-)
+    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
+    @JoinColumn(name = "permGroup_id")
+    var users: MutableSet<User> = mutableSetOf(),
+) {
+    override fun toString(): String {
+        return "PermGroup(id=$id, parentId=$parentId, name=$name, perms=$perms, users=$users)"
+    }
+}
