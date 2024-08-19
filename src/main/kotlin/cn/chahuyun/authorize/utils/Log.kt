@@ -12,7 +12,7 @@ import net.mamoe.mirai.utils.MiraiLogger
  */
 object Log {
 
-    private var LOGGER: MiraiLogger = HuYanAuthorize.LOGGER
+    private var LOGGER: MiraiLogger = HuYanAuthorize.INSTANCE.logger
 
     /**
      * 替换日志打印插件

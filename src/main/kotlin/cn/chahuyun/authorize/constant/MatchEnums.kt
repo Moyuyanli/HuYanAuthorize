@@ -55,10 +55,6 @@ enum class PermissionMatchingEnum {
  */
 @Getter
 enum class UserType(private val valueTemplate: String) {
-    /**
-     * 全局
-     */
-    GLOBAL("global"),
 
     /**
      * 全局用户
@@ -66,29 +62,20 @@ enum class UserType(private val valueTemplate: String) {
     GLOBAL_USER("global-%d"),
 
     /**
-     * 群
-     */
-    GROUP("group-%d"),
-
-    /**
-     * 群用户
+     * 群成员用户
      */
     GROUP_MEMBER("group-%d-member-%d"),
 
     /**
-     * 群分组用户
+     * 群用户
      */
-    GROUP_MEMBERS("group-%d-membersName-%s"),
+    GROUP("group-%d"),
 
     /**
-     * 分组群
+     * 群管理用户
      */
-    LIST("list-%s"),
+    GROUP_ADMIN("group-%d-admin")
 
-    /**
-     * 分组用户
-     */
-    USERS("users-%s")
 }
 
 

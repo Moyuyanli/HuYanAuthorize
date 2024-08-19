@@ -13,13 +13,12 @@ import net.mamoe.mirai.console.plugin.jvm.reloadPluginConfig
  */
 class HuYanAuthorize : KotlinPlugin(
     JvmPluginDescription(
-    id = "cn.chahuyun.HuYanAuthorize",
-    version = VERSION,
-    name = "HuYanAuthorize"
-    ){
+        id = "cn.chahuyun.HuYanAuthorize",
+        version = VERSION,
+        name = "HuYanAuthorize"
+    ) {
         author("Moyuyanli")
         info("壶言权限管理")
-        dependsOn("xyz.cssxsh.mirai.plugin.mirai-hibernate-plugin",false)
     }
 ) {
     companion object {
@@ -29,34 +28,25 @@ class HuYanAuthorize : KotlinPlugin(
         val INSTANCE = HuYanAuthorize()
 
         /**
-         * 日志
-         */
-        val LOGGER = INSTANCE.logger
-
-        /**
          * 插件版本
          */
         const val VERSION = "1.0.8"
-
-        /**
-         * 插件配置
-         */
-        val CONFIG = AuthorizeConfig
     }
 
     override fun onEnable() {
         // 加载配置
-        reloadPluginConfig(AuthorizeConfig)
+        AuthorizeConfig.reload()
         // 加载指令
-        CommandManager.registerCommand(AuthorizeCommand, true)
+//        CommandManager.registerCommand(AuthorizeCommand, false)
         // 初始化插件数据库
         DataManager.init(this)
+
         // 添加本插件的注册消息包信息
-        PermissionServer.instance.init(this, "cn.chahuyun.authorize.manager")
-        LOGGER.info("HuYanAuthorize plugin loaded!")
+//        PermissionServer.instance.init(this, "cn.chahuyun.authorize.manager")
+        logger.info("HuYanAuthorize plugin loaded!")
     }
 
     override fun onDisable() {
-        LOGGER.info("HuYanAuthorize plugin uninstalled!")
+        logger.info("HuYanAuthorize plugin uninstalled!")
     }
 }

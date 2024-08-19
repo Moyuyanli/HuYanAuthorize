@@ -85,7 +85,7 @@ class MessageFilter(private val channel: EventChannel<MessageEvent>) : Filter {
         channel: EventChannel<MessageEvent>,
         methodType: Class<out MessageEvent>,
     ) {
-
+        
     }
 
 

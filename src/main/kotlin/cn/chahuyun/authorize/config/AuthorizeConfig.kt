@@ -14,7 +14,7 @@ import net.mamoe.mirai.console.data.value
 object AuthorizeConfig : AutoSavePluginConfig("AuthorizeConfig") {
 
     @ValueDescription("主人\n")
-    var owner: Long by value()
+    var owner: Long by value(123456L)
 
     @ValueDescription("是否开启方法代理")
     var proxySwitch: Boolean by value(false)
