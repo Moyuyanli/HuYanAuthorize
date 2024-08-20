@@ -132,13 +132,18 @@ class HuYanAuthorize : KotlinPlugin(
 
 
     fun test1() {
-        val one = HibernateFactory.selectOne(Perm::class.java, "code", "admin") ?: throw RuntimeException("权限不存在!")
+//        val one = HibernateFactory.selectOne(Perm::class.java, "code", "admin") ?: throw RuntimeException("权限不存在!")
+//
+//        println("one -> $one")
+//        println("one.permGroup -> ${one.permGroup}")
 
-        println("one -> $one")
-        println("one.permGroup -> ${one.permGroup}")
 
-
-
+        var a :Boolean? = null
+        println("a1 -> ${a == true}")
+        a = false
+        println("a2 -> ${a == true}")
+        a = true
+        println("a3 -> ${a == true}")
 
 
     }

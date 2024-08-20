@@ -201,18 +201,26 @@ class MessageFilter(private val channel: EventChannel<MessageEvent>) : Filter {
         }
 
         var result: Boolean? = null
+        var temp:Boolean
 
         for (perm in perms) {
             val one = HibernateFactory.selectOne(Perm::class.java, "code", perm)
                 ?: throw RuntimeException("权限 $perm 没有注册!")
 
             val permGroup = one.permGroup
-            if (permGroup.isEmpty()) continue
+            if (permGroup.isEmpty()) {
+                if (match == AND) return false else continue
+            }
 
 
-            var temp = false
+            temp = false
             for (group in permGroup) {
-                if (group.users.contains(globalUser) || (isGroup && group.users.contains(groupUser))) {
+                val users = group.users
+                val filter = users.filter { it.type == UserType.GROUP_ADMIN }
+                if (filter.isNotEmpty()) {
+
+                }
+                if (users.contains(globalUser) || (isGroup && users.contains(groupUser))) {
                     result?.let { result = true }
                     temp = true
                     break
@@ -220,12 +228,12 @@ class MessageFilter(private val channel: EventChannel<MessageEvent>) : Filter {
             }
 
             result = when (match) {
-                OR -> return true
-                AND -> (result == true) && temp
+                OR -> if (temp) return true else result == true
+                AND -> result == true && temp
             }
         }
 
-        return result ?: false
+        return result == true
     }
 
     /**
