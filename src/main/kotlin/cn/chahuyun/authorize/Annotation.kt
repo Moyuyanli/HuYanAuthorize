@@ -91,6 +91,11 @@ annotation class MessageAuthorize(
     val groupPermissionsMatching: PermissionMatchingEnum = PermissionMatchingEnum.OR,
 
     /**
+     * 用户权限与群权限关联方式
+     */
+    val userInGroupPermissionsAssociation: PermissionMatchingEnum = PermissionMatchingEnum.AND,
+
+    /**
      * 优先级
      *
      * 默认:正常

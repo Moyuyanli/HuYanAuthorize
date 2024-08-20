@@ -36,7 +36,6 @@ data class Perm(
     var permGroup: MutableList<PermGroup> = mutableListOf(),
 ) {
     override fun toString(): String {
-        return "Perm(id=$id, code=$code, description='$description', createPlugin=$createPlugin)"
+        return "Perm(id=$id, code=$code, description='$description', createPlugin=$createPlugin"
     }
-
 }

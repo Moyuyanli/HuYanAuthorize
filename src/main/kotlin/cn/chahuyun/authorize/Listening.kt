@@ -1,9 +1,18 @@
 package cn.chahuyun.authorize
 
+import cn.chahuyun.authorize.constant.PermConstant
+import cn.chahuyun.authorize.constant.PermissionMatchingEnum
+import cn.chahuyun.authorize.constant.PermissionMatchingEnum.AND
+import cn.chahuyun.authorize.constant.PermissionMatchingEnum.OR
+import cn.chahuyun.authorize.constant.UserType
+import cn.chahuyun.authorize.entity.Perm
+import cn.chahuyun.authorize.entity.User
 import cn.chahuyun.authorize.utils.Log
 import cn.chahuyun.authorize.utils.Log.debug
 import cn.chahuyun.authorize.utils.Log.error
+import cn.chahuyun.hibernateplus.HibernateFactory
 import net.mamoe.mirai.event.EventChannel
+import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
 import java.lang.reflect.Method
 import java.util.*
@@ -11,15 +20,28 @@ import java.util.stream.Stream
 
 interface Filter {
     /**
-     * 过滤
+     * 权限过滤
      *
-     * @param method 方法过滤流
-     * @param instance 实例
+     * @param messageEvent 消息事件
+     * @param annotation 注解信息
      * @author Moyuyanli
-     * @date 2024-8-10 14:38:07
+     * @date 2024-8-10 14:38
      */
-    fun filter(method: Stream<Method>, instance: Any)
+    fun permFilter(
+        messageEvent: MessageEvent,
+        annotation: MessageAuthorize,
+        methodType: Class<out MessageEvent>,
+    ): Boolean
 
+    /**
+     * 消息过滤
+     *
+     * @param messageEvent 消息事件
+     * @param annotation 注解信息
+     * @author Moyuyanli
+     * @date 2024/8/20 15:27
+     */
+    fun messageFilter(messageEvent: MessageEvent, annotation: MessageAuthorize): Boolean
 }
 
 
@@ -43,7 +65,7 @@ class MessageFilter(private val channel: EventChannel<MessageEvent>) : Filter {
 
                 val methods: Array<Method> = clazz.getDeclaredMethods()
                 val stream = Arrays.stream(methods)
-                register.filter(stream, instance)
+                register.permFilter(stream, instance)
             }
         }
     }
@@ -56,7 +78,7 @@ class MessageFilter(private val channel: EventChannel<MessageEvent>) : Filter {
      * @author Moyuyanli
      * @date 2024-8-10 14:38:07
      */
-    override fun filter(method: Stream<Method>, instance: Any) {
+    fun permFilter(method: Stream<Method>, instance: Any) {
         method.filter { it.isAnnotationPresent(MessageAuthorize::class.java) && it.parameterCount == 1 }
             .forEach {
                 val paramsType = it.parameterTypes[0]
@@ -79,14 +101,140 @@ class MessageFilter(private val channel: EventChannel<MessageEvent>) : Filter {
      * @author Moyuyanli
      * @date 2023/8/11 10:11
      */
-    fun execute(
+    private fun execute(
         bean: Any,
         method: Method,
         channel: EventChannel<MessageEvent>,
         methodType: Class<out MessageEvent>,
     ) {
-        
+        val annotation = method.getAnnotation(MessageAuthorize::class.java)
+
+        channel.filter { permFilter(it, annotation, methodType) && messageFilter(it, annotation) }
+            .subscribeAlways(
+                methodType,
+                concurrency = annotation.concurrency,
+                priority = annotation.priority
+            ) {
+                method.invoke(bean, it)
+            }
+
     }
 
+
+    /**
+     * 权限过滤
+     *
+     * @param messageEvent 消息事件
+     * @param annotation 注解信息
+     * @author Moyuyanli
+     * @date 2024-8-20 16:17
+     */
+    override fun permFilter(
+        messageEvent: MessageEvent, annotation: MessageAuthorize,
+        methodType: Class<out MessageEvent>,
+    ): Boolean {
+        val userPermMatch: Boolean
+        val groupPermMatch: Boolean
+
+        val userPerms = annotation.userPermissions
+        val groupPerms = annotation.groupPermissions
+
+        userPermMatch = if (userPerms.contains(PermConstant.NULL)) {
+            true
+        } else {
+            userPermMatch(userPerms, annotation.userPermissionsMatching, messageEvent)
+        }
+
+        if (!GroupMessageEvent::class.java.isAssignableFrom(methodType)) {
+            return userPermMatch
+        }
+
+        groupPermMatch = if (groupPerms.contains(PermConstant.NULL)) {
+            true
+        } else {
+            groupPermMatch(groupPerms, messageEvent)
+        }
+
+        return when (annotation.userInGroupPermissionsAssociation) {
+            OR -> userPermMatch || groupPermMatch
+            AND -> userPermMatch && groupPermMatch
+        }
+    }
+
+    /**
+     * 消息过滤
+     *
+     * @param messageEvent 消息事件
+     * @param annotation 注解信息
+     * @author Moyuyanli
+     * @date 2024-8-20 16:18
+     */
+    override fun messageFilter(messageEvent: MessageEvent, annotation: MessageAuthorize): Boolean {
+        return true
+    }
+
+    /**
+     * 用户权限过滤
+     * @param perms 用户权限列表
+     * @param messageEvent 消息事件
+     */
+    private fun userPermMatch(
+        perms: Array<String>,
+        match: PermissionMatchingEnum,
+        messageEvent: MessageEvent,
+    ): Boolean {
+
+        val globalUser = User(
+            type = UserType.GLOBAL_USER,
+            userId = messageEvent.sender.id
+        )
+
+        val isGroup = messageEvent is GroupMessageEvent
+        val groupUser = if (isGroup) {
+            User(
+                type = UserType.GROUP_MEMBER,
+                userId = messageEvent.sender.id,
+                groupId = messageEvent.subject.id
+            )
+        } else {
+            null
+        }
+
+        var result: Boolean? = null
+
+        for (perm in perms) {
+            val one = HibernateFactory.selectOne(Perm::class.java, "code", perm)
+                ?: throw RuntimeException("权限 $perm 没有注册!")
+
+            val permGroup = one.permGroup
+            if (permGroup.isEmpty()) continue
+
+
+            var temp = false
+            for (group in permGroup) {
+                if (group.users.contains(globalUser) || (isGroup && group.users.contains(groupUser))) {
+                    result?.let { result = true }
+                    temp = true
+                    break
+                }
+            }
+
+            result = when (match) {
+                OR -> return true
+                AND -> (result == true) && temp
+            }
+        }
+
+        return result ?: false
+    }
+
+    /**
+     * 群权限过滤
+     * @param perms 群权限
+     * @param messageEvent 消息事件
+     */
+    private fun groupPermMatch(perms: Array<String>, messageEvent: MessageEvent): Boolean {
+        return false
+    }
 
 }

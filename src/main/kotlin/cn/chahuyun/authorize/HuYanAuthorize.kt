@@ -44,7 +44,8 @@ class HuYanAuthorize : KotlinPlugin(
         // 初始化插件数据库
         DataManager.init(this)
 
-        test()
+//        test()
+        test1()
 
 
         // 添加本插件的注册消息包信息
@@ -126,6 +127,19 @@ class HuYanAuthorize : KotlinPlugin(
 //        val group = HibernateFactory.merge(selectOne)
 //
 //        println(group)
+
+    }
+
+
+    fun test1() {
+        val one = HibernateFactory.selectOne(Perm::class.java, "code", "admin") ?: throw RuntimeException("权限不存在!")
+
+        println("one -> $one")
+        println("one.permGroup -> ${one.permGroup}")
+
+
+
+
 
     }
 
