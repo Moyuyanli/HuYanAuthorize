@@ -35,6 +35,11 @@ data class Perm(
     @ManyToMany(mappedBy = "perms", fetch = FetchType.EAGER)
     var permGroup: MutableList<PermGroup> = mutableListOf(),
 ) {
+    constructor(code: String, description: String) : this() {
+        this.code = code
+        this.description = description
+    }
+
     override fun toString(): String {
         return "Perm(id=$id, code=$code, description='$description', createPlugin=$createPlugin"
     }

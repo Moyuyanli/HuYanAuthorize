@@ -1,4 +1,4 @@
-package cn.chahuyun.authorize.Interface
+package cn.chahuyun.authorize.match
 
 import net.mamoe.mirai.event.Event
 

@@ -1,6 +1,6 @@
 package cn.chahuyun.authorize
 
-import cn.chahuyun.authorize.Interface.CustomPattern
+import cn.chahuyun.authorize.match.CustomPattern
 import cn.chahuyun.authorize.constant.MessageConversionEnum
 import cn.chahuyun.authorize.constant.MessageMatchingEnum
 import cn.chahuyun.authorize.constant.PermConstant
@@ -117,6 +117,6 @@ annotation class MessageAuthorize(
      *
      * @see ConcurrencyKind
      */
-    val concurrency: ConcurrencyKind = ConcurrencyKind.LOCKED,
+    val concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT,
 
     )

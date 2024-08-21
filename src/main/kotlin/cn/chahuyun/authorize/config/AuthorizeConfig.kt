@@ -19,7 +19,7 @@ object AuthorizeConfig : AutoSavePluginConfig("AuthorizeConfig") {
     @ValueDescription("是否开启方法代理")
     var proxySwitch: Boolean by value(false)
 
-    @ValueDescription("数据库类型(H2,SQLITE,MYSQL")
+    @ValueDescription("数据库类型(H2,SQLITE,MYSQL)")
     var dataType: DriveType  by value(DriveType.H2)
 
     @ValueDescription("mysql数据库连接地址")

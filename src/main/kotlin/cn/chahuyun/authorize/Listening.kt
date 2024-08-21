@@ -8,6 +8,7 @@ import cn.chahuyun.authorize.constant.PermissionMatchingEnum.OR
 import cn.chahuyun.authorize.constant.UserType
 import cn.chahuyun.authorize.entity.Perm
 import cn.chahuyun.authorize.entity.User
+import cn.chahuyun.authorize.utils.ContinuationUtil
 import cn.chahuyun.authorize.utils.Log
 import cn.chahuyun.authorize.utils.Log.debug
 import cn.chahuyun.authorize.utils.Log.error
@@ -83,7 +84,9 @@ class MessageFilter(private val channel: EventChannel<MessageEvent>) : Filter {
      * @date 2024-8-10 14:38:07
      */
     fun permFilter(method: Stream<Method>, instance: Any) {
-        method.filter { it.isAnnotationPresent(MessageAuthorize::class.java) && it.parameterCount == 1 }
+        method.filter {
+            it.isAnnotationPresent(MessageAuthorize::class.java) && it.parameterTypes.isNotEmpty()
+        }
             .forEach {
                 val paramsType = it.parameterTypes[0]
                 if (MessageEvent::class.java.isAssignableFrom(paramsType)) {
@@ -113,17 +116,28 @@ class MessageFilter(private val channel: EventChannel<MessageEvent>) : Filter {
     ) {
         val annotation = method.getAnnotation(MessageAuthorize::class.java)
 
-        channel.filter { permFilter(it, annotation, methodType) && messageFilter(it, annotation) }
-            .subscribeAlways(
-                methodType,
+        debug("注册消息事件方法-> ${method.name}")
+        channel.filter {
+            permFilter(it, annotation, methodType) && messageFilter(it, annotation)
+        }
+            .subscribeAlways<MessageEvent>(
                 concurrency = annotation.concurrency,
                 priority = annotation.priority
             ) {
-                method.invoke(bean, it)
+                if (method.parameterCount == 1) {
+                    method.invoke(bean, it)
+                } else {
+                    // 创建 Continuation 实例
+                    val continuation = ContinuationUtil.getContinuation()
+
+                    // 通过反射调用 suspend 函数
+                    method.invoke(bean, it, continuation)
+
+                    // 等待协程完成
+                    ContinuationUtil.closeContinuation(continuation)
+                }
             }
-
     }
-
 
     /**
      * 权限过滤
@@ -181,7 +195,13 @@ class MessageFilter(private val channel: EventChannel<MessageEvent>) : Filter {
         }
 
         return when (annotation.messageMatching) {
-            cn.chahuyun.authorize.constant.MessageMatchingEnum.TEXT -> annotation.text.equals(message)
+            cn.chahuyun.authorize.constant.MessageMatchingEnum.TEXT -> {
+                for (s in annotation.text) {
+                    if (s == message) return true
+                }
+                return false
+            }
+
             cn.chahuyun.authorize.constant.MessageMatchingEnum.REGULAR -> Pattern.matches(annotation.text[0], message)
             cn.chahuyun.authorize.constant.MessageMatchingEnum.CUSTOM -> {
                 val instance = annotation.custom.java.getDeclaredConstructor().newInstance()
