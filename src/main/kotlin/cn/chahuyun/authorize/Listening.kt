@@ -1,5 +1,6 @@
 package cn.chahuyun.authorize
 
+import cn.chahuyun.authorize.constant.MessageConversionEnum.*
 import cn.chahuyun.authorize.constant.PermConstant
 import cn.chahuyun.authorize.constant.PermissionMatchingEnum
 import cn.chahuyun.authorize.constant.PermissionMatchingEnum.AND
@@ -15,8 +16,10 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
 import java.lang.reflect.Method
 import java.util.*
+import java.util.regex.Pattern
 import java.util.stream.Stream
 
 interface Filter {
@@ -171,7 +174,20 @@ class MessageFilter(private val channel: EventChannel<MessageEvent>) : Filter {
      * @date 2024-8-20 16:18
      */
     override fun messageFilter(messageEvent: MessageEvent, annotation: MessageAuthorize): Boolean {
-        return true
+        val message = when (annotation.messageConversion) {
+            CONTENT -> messageEvent.message.contentToString()
+            MIRAI_CODE -> messageEvent.message.serializeToMiraiCode()
+            JSON -> messageEvent.message.serializeToJsonString()
+        }
+
+        return when (annotation.messageMatching) {
+            cn.chahuyun.authorize.constant.MessageMatchingEnum.TEXT -> annotation.text.equals(message)
+            cn.chahuyun.authorize.constant.MessageMatchingEnum.REGULAR -> Pattern.matches(annotation.text[0], message)
+            cn.chahuyun.authorize.constant.MessageMatchingEnum.CUSTOM -> {
+                val instance = annotation.custom.java.getDeclaredConstructor().newInstance()
+                return instance.custom(event = messageEvent)
+            }
+        }
     }
 
     /**

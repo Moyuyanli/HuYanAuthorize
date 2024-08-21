@@ -28,6 +28,26 @@ enum class MessageMatchingEnum {
     CUSTOM
 }
 
+/**
+ * 消息匹配时转换类型
+ */
+enum class MessageConversionEnum {
+    /**
+     * contentToString
+     */
+    CONTENT,
+
+    /**
+     * serializeToMiraiCode
+     */
+    MIRAI_CODE,
+
+    /**
+     * serializeToJsonString
+     */
+    JSON
+}
+
 
 /**
  * 权限匹配方式

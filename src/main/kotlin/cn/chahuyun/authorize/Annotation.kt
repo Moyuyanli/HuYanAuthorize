@@ -1,6 +1,7 @@
 package cn.chahuyun.authorize
 
 import cn.chahuyun.authorize.Interface.CustomPattern
+import cn.chahuyun.authorize.constant.MessageConversionEnum
 import cn.chahuyun.authorize.constant.MessageMatchingEnum
 import cn.chahuyun.authorize.constant.PermConstant
 import cn.chahuyun.authorize.constant.PermissionMatchingEnum
@@ -55,6 +56,11 @@ annotation class MessageAuthorize(
      * @see MessageMatchingEnum
      */
     val messageMatching: MessageMatchingEnum = MessageMatchingEnum.TEXT,
+
+    /**
+     * 消息匹配时，转换类型
+     */
+    val messageConversion: MessageConversionEnum = MessageConversionEnum.MIRAI_CODE,
 
     /**
      * 用户权限
