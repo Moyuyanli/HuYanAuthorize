@@ -33,10 +33,15 @@ data class User(
     /**
      * 创建时间
      */
-    var createTime: Date? = null,
+    var createTime: Date? = Date(),
 
     ) {
 
+    constructor(type: UserType, groupId: Long?, userId: Long?) : this() {
+        this.type = type
+        this.groupId = groupId
+        this.userId = userId
+    }
 
 
     override fun toString(): String {

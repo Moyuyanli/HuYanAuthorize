@@ -41,6 +41,14 @@ data class PermGroup(
     @JoinColumn(name = "permGroup_id")
     var users: MutableSet<User> = mutableSetOf(),
 ) {
+
+    constructor(name: String,parentId: Int? = null) : this() {
+        this.name = name
+        this.parentId = parentId
+    }
+
+
+
     override fun toString(): String {
         return "PermGroup(id=$id, parentId=$parentId, name=$name, perms=$perms, users=$users)"
     }

@@ -27,6 +27,7 @@ data class Perm(
     /**
      * 注册插件
      */
+    @Column(name = "create_plugin")
     var createPlugin: String? = null,
 
     /**
@@ -35,9 +36,15 @@ data class Perm(
     @ManyToMany(mappedBy = "perms", fetch = FetchType.EAGER)
     var permGroup: MutableList<PermGroup> = mutableListOf(),
 ) {
+
     constructor(code: String, description: String) : this() {
         this.code = code
         this.description = description
+    }
+
+    fun setCreatePlugin(name: String): Perm {
+        this.createPlugin = name
+        return this
     }
 
     override fun toString(): String {

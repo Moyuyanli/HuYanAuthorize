@@ -86,17 +86,13 @@ object PermissionServer {
     }
 
     private fun registerPerm(plugin: KotlinPlugin, perms: List<Perm>) {
-        for (perm in perms) {
-            if (HibernateFactory.selectOne(Perm::class.java, "code", perm.code) != null) {
-                debug("权限 ${perm.code} 已注册! 注册插件: ${perm.createPlugin}")
-                continue
-            }
-
-            perm.createPlugin = plugin.name
-
-            if (HibernateFactory.merge(perm).id != 0) {
+        perms.forEach { perm ->
+            HibernateFactory.selectOne(Perm::class.java, "code", perm.code)?.let {
+                debug("权限 ${it.code} 已注册! 注册插件: ${it.createPlugin}")
+            } ?: if (HibernateFactory.merge(perm.setCreatePlugin(plugin.name)).id != 0) {
                 debug("权限 ${perm.code} 注册成功!")
-                continue
+            } else {
+                error("权限 ${perm.code} 注册失败!")
             }
         }
     }

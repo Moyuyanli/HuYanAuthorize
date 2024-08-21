@@ -6,15 +6,17 @@ import cn.chahuyun.authorize.utils.getSystemInfo
 import net.mamoe.mirai.event.events.MessageEvent
 
 @EventComponent
-class PermManager() {
-
+class PermManager {
 
     @MessageAuthorize(
-        text = ["进行测试"]
+        text = ["进行测试"],
+        userPermissions = ["owner"]
     )
     suspend fun test(messageEvent: MessageEvent) {
         messageEvent.subject.sendMessage(getSystemInfo())
     }
+
+
 
 
 }

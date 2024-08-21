@@ -38,6 +38,7 @@ object ContinuationUtil {
 }
 
 
+@SuppressWarnings("all")
 fun getSystemInfo(): String {
     val osBean = ManagementFactory.getOperatingSystemMXBean()
     val memoryBean = ManagementFactory.getMemoryMXBean()
