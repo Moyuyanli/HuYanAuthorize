@@ -11,6 +11,7 @@ import cn.chahuyun.authorize.utils.Log
 import cn.chahuyun.authorize.utils.Log.debug
 import cn.chahuyun.authorize.utils.Log.error
 import cn.chahuyun.hibernateplus.HibernateFactory
+import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
@@ -152,7 +153,7 @@ class MessageFilter(private val channel: EventChannel<MessageEvent>) : Filter {
         groupPermMatch = if (groupPerms.contains(PermConstant.NULL)) {
             true
         } else {
-            groupPermMatch(groupPerms, messageEvent)
+            groupPermMatch(groupPerms, annotation.groupPermissionsMatching, messageEvent)
         }
 
         return when (annotation.userInGroupPermissionsAssociation) {
@@ -201,7 +202,7 @@ class MessageFilter(private val channel: EventChannel<MessageEvent>) : Filter {
         }
 
         var result: Boolean? = null
-        var temp:Boolean
+        var temp: Boolean
 
         for (perm in perms) {
             val one = HibernateFactory.selectOne(Perm::class.java, "code", perm)
@@ -212,18 +213,40 @@ class MessageFilter(private val channel: EventChannel<MessageEvent>) : Filter {
                 if (match == AND) return false else continue
             }
 
-
             temp = false
             for (group in permGroup) {
                 val users = group.users
-                val filter = users.filter { it.type == UserType.GROUP_ADMIN }
-                if (filter.isNotEmpty()) {
 
-                }
-                if (users.contains(globalUser) || (isGroup && users.contains(groupUser))) {
-                    result?.let { result = true }
+                //全局用户权限校验
+                if (users.contains(globalUser)) {
+                    result = result ?: true
                     temp = true
                     break
+                }
+
+                if (isGroup) {
+                    //群用户校验
+                    if (users.contains(groupUser)) {
+                        result = result ?: true
+                        temp = true
+                        break
+                    }
+
+                    //群管理权限校验
+                    val filter = users.filter { it.type == UserType.GROUP_ADMIN }
+                    if (filter.isNotEmpty()) {
+                        val user = filter[0]
+                        if (groupUser != null && user.groupId == groupUser.groupId) {
+                            if (messageEvent is GroupMessageEvent) {
+                                val member = messageEvent.group[groupUser.userId!!]
+                                if (member?.permission == MemberPermission.OWNER || member?.permission == MemberPermission.ADMINISTRATOR) {
+                                    result = result ?: true
+                                    temp = true
+                                    break
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -241,8 +264,45 @@ class MessageFilter(private val channel: EventChannel<MessageEvent>) : Filter {
      * @param perms 群权限
      * @param messageEvent 消息事件
      */
-    private fun groupPermMatch(perms: Array<String>, messageEvent: MessageEvent): Boolean {
-        return false
-    }
+    private fun groupPermMatch(
+        perms: Array<String>,
+        match: PermissionMatchingEnum,
+        messageEvent: MessageEvent,
+    ): Boolean {
+        if (messageEvent !is GroupMessageEvent) return false
 
+        val user = User(
+            type = UserType.GROUP,
+            groupId = messageEvent.group.id
+        )
+
+        var result: Boolean? = null
+
+        for (perm in perms) {
+            val one = HibernateFactory.selectOne(Perm::class.java, "code", perm)
+                ?: throw RuntimeException("权限 $perm 没有注册!")
+
+            val permGroup = one.permGroup
+            if (permGroup.isEmpty()) {
+                if (match == AND) return false else continue
+            }
+
+            var temp = false
+
+            for (group in permGroup) {
+                if (group.users.contains(user)) {
+                    result = result == true
+                    temp = true
+                    break
+                }
+            }
+
+            result = when (match) {
+                OR -> if (temp) return true else result == true
+                AND -> result == true && temp
+            }
+
+        }
+        return result == true
+    }
 }
