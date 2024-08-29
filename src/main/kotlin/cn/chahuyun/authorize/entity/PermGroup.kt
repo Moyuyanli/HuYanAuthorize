@@ -47,7 +47,15 @@ data class PermGroup(
         this.parentId = parentId
     }
 
-
+    /**
+     * 这个权限code是否存在于该权限组
+     */
+    fun contains(code :String) :Boolean{
+        for (perm in perms) {
+            if (perm.code == code) return true
+        }
+        return false
+    }
 
     override fun toString(): String {
         return "PermGroup(id=$id, parentId=$parentId, name=$name, perms=$perms, users=$users)"

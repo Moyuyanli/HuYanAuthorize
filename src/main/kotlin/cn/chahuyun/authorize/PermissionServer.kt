@@ -2,6 +2,8 @@ package cn.chahuyun.authorize
 
 import cn.chahuyun.authorize.constant.PermConstant
 import cn.chahuyun.authorize.entity.Perm
+import cn.chahuyun.authorize.exception.ExceptionHandle
+import cn.chahuyun.authorize.exception.ExceptionHandleApi
 import cn.chahuyun.authorize.utils.Log.debug
 import cn.chahuyun.authorize.utils.Log.warning
 import cn.chahuyun.hibernateplus.HibernateFactory
@@ -16,13 +18,17 @@ import org.reflections.util.ConfigurationBuilder
 
 object PermissionServer {
 
-    fun init(plugin: KotlinPlugin, packageName: String) {
-        val eventChannel = GlobalEventChannel.parentScope(plugin)
+    fun init(
+        plugin: KotlinPlugin,
+        packageName: String,
+        exceptionHandle: ExceptionHandleApi = ExceptionHandle(),
+    ) {
+        val eventChannel = GlobalEventChannel
         val classes = scanPackage(plugin.javaClass.classLoader, packageName)
 
         if (classes.isEmpty()) throw RuntimeException("注册类扫描为空!")
 
-        MessageFilter.register(classes, eventChannel.filterIsInstance(MessageEvent::class))
+        MessageFilter.register(classes, eventChannel.filterIsInstance(MessageEvent::class), exceptionHandle)
     }
 
     private fun scanPackage(loader: ClassLoader, packageName: String): MutableSet<Class<*>> {
@@ -98,6 +104,19 @@ object PermissionServer {
     }
 
     /**
+     * 检查这个权限code是否已经注册
+     *
+     * @param code 权限code
+     * @return true 存在
+     * @author Moyuyanli
+     * @date 2024/8/29 11:32
+     */
+    fun checkPermExist(code: String): Boolean {
+        return HibernateFactory.selectOne(Perm::class.java, "code", code) != null
+    }
+
+
+    /**
      * 请勿调用!
      */
     internal fun authorizePermRegister() {
@@ -105,12 +124,12 @@ object PermissionServer {
             HuYanAuthorize.INSTANCE,
             mutableListOf(
                 Perm(
-                    code = PermConstant.ADMIN,
-                    description = "管理员权限"
-                ),
-                Perm(
                     code = PermConstant.OWNER,
                     description = "主人权限"
+                ),
+                Perm(
+                    code = PermConstant.ADMIN,
+                    description = "管理员权限"
                 ),
             )
         )

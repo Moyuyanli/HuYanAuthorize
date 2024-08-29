@@ -8,6 +8,7 @@ import cn.chahuyun.authorize.constant.PermissionMatchingEnum.OR
 import cn.chahuyun.authorize.constant.UserType
 import cn.chahuyun.authorize.entity.Perm
 import cn.chahuyun.authorize.entity.User
+import cn.chahuyun.authorize.exception.ExceptionHandleApi
 import cn.chahuyun.authorize.utils.ContinuationUtil
 import cn.chahuyun.authorize.utils.Log
 import cn.chahuyun.authorize.utils.Log.debug
@@ -50,11 +51,14 @@ interface Filter {
 }
 
 
-class MessageFilter(private val channel: EventChannel<MessageEvent>) : Filter {
+class MessageFilter(
+    private val channel: EventChannel<MessageEvent>,
+    private val handleApi: ExceptionHandleApi,
+) : Filter {
 
     companion object {
-        fun register(classList: Set<Class<*>>, channel: EventChannel<MessageEvent>) {
-            val register = MessageFilter(channel)
+        fun register(classList: Set<Class<*>>, channel: EventChannel<MessageEvent>, handleApi: ExceptionHandleApi) {
+            val register = MessageFilter(channel, handleApi)
 
             for (clazz in classList) {
                 val name = clazz.name
@@ -70,20 +74,20 @@ class MessageFilter(private val channel: EventChannel<MessageEvent>) : Filter {
 
                 val methods: Array<Method> = clazz.getDeclaredMethods()
                 val stream = Arrays.stream(methods)
-                register.permFilter(stream, instance)
+                register.frontFilter(stream, instance)
             }
         }
     }
 
     /**
-     * 过滤
+     * 前置过滤
      *
      * @param method 方法过滤流
      * @param instance 实例
      * @author Moyuyanli
      * @date 2024-8-10 14:38:07
      */
-    fun permFilter(method: Stream<Method>, instance: Any) {
+    fun frontFilter(method: Stream<Method>, instance: Any) {
         method.filter {
             it.isAnnotationPresent(MessageAuthorize::class.java) && it.parameterTypes.isNotEmpty()
         }
@@ -117,22 +121,29 @@ class MessageFilter(private val channel: EventChannel<MessageEvent>) : Filter {
         val annotation = method.getAnnotation(MessageAuthorize::class.java)
 
         debug("注册消息事件方法-> ${method.name}")
-        channel.filter {
-            permFilter(it, annotation, methodType) && messageFilter(it, annotation)
-        }
+        channel.exceptionHandler { handleApi.handle(it) }
+            .filter {
+                permFilter(it, annotation, methodType) && messageFilter(it, annotation)
+            }
             .subscribeAlways<MessageEvent>(
                 concurrency = annotation.concurrency,
                 priority = annotation.priority
             ) {
                 if (method.parameterCount == 1) {
-                    method.invoke(bean, it)
+                    try {
+                        method.invoke(bean, it)
+                    } catch (e: Exception) {
+                        handleApi.handle(e)
+                    }
                 } else {
                     // 创建 Continuation 实例
                     val continuation = ContinuationUtil.getContinuation()
-
-                    // 通过反射调用 suspend 函数
-                    method.invoke(bean, it, continuation)
-
+                    try {
+                        // 通过反射调用 suspend 函数
+                        method.invoke(bean, it, continuation)
+                    } catch (e: Exception) {
+                        handleApi.handle(e)
+                    }
                     // 等待协程完成
                     ContinuationUtil.closeContinuation(continuation)
                 }

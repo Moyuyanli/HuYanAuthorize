@@ -5,9 +5,15 @@ import cn.chahuyun.authorize.constant.UserType
 import cn.chahuyun.authorize.entity.Perm
 import cn.chahuyun.authorize.entity.PermGroup
 import cn.chahuyun.authorize.entity.User
+import cn.chahuyun.authorize.exception.ExceptionHandle
+import cn.chahuyun.authorize.manager.PermManager
 import cn.chahuyun.hibernateplus.HibernateFactory
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
+import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.event.GlobalEventChannel
+import net.mamoe.mirai.event.events.GroupMessageEvent
+import net.mamoe.mirai.event.events.MessageEvent
 
 
 /**
