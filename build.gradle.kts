@@ -35,7 +35,6 @@ mavenCentralPublish {
 
     singleDevGithubProject("Moyuyanli", "HuYanAuthorize")
     licenseFromGitHubProject("AGPL-3.0", "main")
-    developer("moyuyanli")
 
     // 设置 Publish 临时目录
     workingDir = System.getenv("PUBLICATION_TEMP")?.let { file(it).resolve(projectName) }
