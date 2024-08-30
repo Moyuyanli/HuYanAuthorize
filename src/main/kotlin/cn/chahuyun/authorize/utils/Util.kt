@@ -1,8 +1,10 @@
 package cn.chahuyun.authorize.utils
 
-import cn.chahuyun.authorize.PermissionServer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import net.mamoe.mirai.contact.NormalMember
+import net.mamoe.mirai.event.events.GroupMessageEvent
+import net.mamoe.mirai.message.data.At
 import java.lang.management.ManagementFactory
 import java.time.Duration
 import java.time.Instant
@@ -34,6 +36,34 @@ object ContinuationUtil {
     suspend fun closeContinuation(continuation: Continuation<Unit>) {
         continuation.context[Job]?.join()
     }
+
+}
+
+
+object EventUtil {
+
+    /**
+     * 获取at的用户
+     *
+     * @return 第一个at的用户，可能为null
+     */
+    fun getAtMember(event: GroupMessageEvent): NormalMember? {
+        val message = event.message
+        for (singleMessage in message) {
+            if (singleMessage is At) {
+                return event.group[singleMessage.target]
+            }
+        }
+
+        val contentToString = message.contentToString()
+
+        val find = Regex("@(\\d+)").find(contentToString)
+        find?.let {
+            return event.group[it.groupValues[1].toLong()]
+        }
+        return null
+    }
+
 
 }
 
@@ -81,5 +111,7 @@ fun getSystemInfo(): String {
 
 
 }
+
+
 
 
