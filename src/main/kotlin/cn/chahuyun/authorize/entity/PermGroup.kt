@@ -42,7 +42,7 @@ data class PermGroup(
     var users: MutableSet<User> = mutableSetOf(),
 ) {
 
-    constructor(name: String,parentId: Int? = null) : this() {
+    constructor(name: String, parentId: Int? = null) : this() {
         this.name = name
         this.parentId = parentId
     }
@@ -50,7 +50,7 @@ data class PermGroup(
     /**
      * 这个权限code是否存在于该权限组
      */
-    fun contains(code :String) :Boolean{
+    fun contains(code: String): Boolean {
         for (perm in perms) {
             if (perm.code == code) return true
         }
@@ -59,5 +59,30 @@ data class PermGroup(
 
     override fun toString(): String {
         return "PermGroup(id=$id, parentId=$parentId, name=$name, perms=$perms, users=$users)"
+    }
+}
+
+/**
+ * 权限组树
+ */
+data class PermGroupTree(
+    val id: Int?,
+    val parentId: Int?,
+    val name: String?,
+    val perms: MutableSet<Perm>,
+    val users: MutableSet<User>,
+    var children: MutableSet<PermGroupTree> = mutableSetOf(),
+) {
+
+    companion object {
+        fun fromPermGroup(permGroup: PermGroup): PermGroupTree {
+            return PermGroupTree(
+                id = permGroup.id,
+                parentId = permGroup.parentId,
+                name = permGroup.name,
+                perms = permGroup.perms,
+                users = permGroup.users
+            )
+        }
     }
 }

@@ -1,7 +1,9 @@
 package cn.chahuyun.authorize.entity
 
 import cn.chahuyun.authorize.constant.UserType
+import cn.chahuyun.authorize.constant.UserType.*
 import jakarta.persistence.*
+import net.mamoe.mirai.Bot
 import java.util.*
 
 /**
@@ -67,4 +69,25 @@ data class User(
         result = 31 * result + (userId?.hashCode() ?: 0)
         return result
     }
+
+    /**
+     * 转换用户文本输出
+     */
+    fun toUserName(): String {
+        val bot = Bot.instances.getOrNull(0)
+        return when (type) {
+            GLOBAL_USER -> "全局用户:${bot?.let { it.getFriend(userId!!)?.nick ?: "gl-$userId" }}"
+            GROUP_MEMBER -> "群成员:${
+                bot?.let {
+                    it.getGroup(groupId!!)?.get(userId!!)
+                        ?.let { ut -> "${ut.group.name}-${ut.nick}" } ?: "g$groupId-u$userId"
+                }
+            }"
+
+            GROUP -> "群:${bot?.let { it.getGroup(groupId!!)?.name ?: "g$groupId" }}"
+            GROUP_ADMIN -> "群管理:${bot?.let { it.getGroup(groupId!!)?.name ?: "g$groupId" }}"
+            null -> throw RuntimeException("用户类型错误!")
+        }
+    }
+
 }
