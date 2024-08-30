@@ -17,7 +17,7 @@
 
 ```groovy
     dependencies {
-    compileOnly("cn.chahuyun:HuYanAuthorize:1.0.0")
+    compileOnly("cn.chahuyun:HuYanAuthorize:1.0.8")
 }
 ```
 
@@ -36,7 +36,7 @@
 @EventComponent //声明此类中有需要注册事件监听的方法
 public class PermissionManager {
 
-    @MessageAuthorize(text = "你好")//注册消息监听，具体参数可以查看 MessageAuthorize 注解
+    @MessageAuthorize(text = ["你好"])//注册消息监听，具体参数可以查看 MessageAuthorize 注解
     public void reply(MessageEvent event) {
         event.getSubject().sendMessage("你好呀！");
     }

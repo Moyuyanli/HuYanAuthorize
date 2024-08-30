@@ -5,6 +5,7 @@ import cn.chahuyun.authorize.config.AuthorizeConfig
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
 
+
 object AuthorizeCommand : CompositeCommand(
     HuYanAuthorize.INSTANCE, "hya",
     description = "壶言权限管理指令"
