@@ -31,6 +31,10 @@ class UserManager {
             split[1].toLong()
         }
 
+        if (userId == null) {
+            throw RuntimeException("获取at用户错误!")
+        }
+
         val one = HibernateFactory.selectOne(PermGroup::class.java, "name", split[2])
 
         if (one == null) {
@@ -38,7 +42,7 @@ class UserManager {
             return
         }
 
-        val user = User(type = UserType.GLOBAL_USER, userId = userId)
+        val user = User.globalUser(userId)
 
         if (one.users.contains(user)) {
             sendMessageQuery(event, "该用户已经存在于该权限组了!")
@@ -67,7 +71,7 @@ class UserManager {
             return
         }
 
-        val user = User(type = UserType.GROUP, groupId = event.group.id)
+        val user = User.group(event.group.id)
 
         if (one.users.contains(user)) {
             sendMessageQuery(event, "该群已经存在于该权限组了!")
@@ -95,7 +99,7 @@ class UserManager {
             return
         }
 
-        val user = User(type = UserType.GROUP_ADMIN, groupId = event.group.id)
+        val user = User.groupAdmin(event.group.id)
 
         if (one.users.contains(user)) {
             sendMessageQuery(event, "该管理用户已经存在于该权限组了!")
@@ -127,7 +131,7 @@ class UserManager {
             return
         }
 
-        val user = User(type = UserType.GROUP_MEMBER, groupId = event.group.id, userId = userId)
+        val user = User.member(event.group.id,userId)
 
         if (one.users.contains(user)) {
             sendMessageQuery(event, "该群成员已经存在于该权限组了!")

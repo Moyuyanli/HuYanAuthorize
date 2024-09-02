@@ -232,18 +232,11 @@ class MessageFilter(
         messageEvent: MessageEvent,
     ): Boolean {
 
-        val globalUser = User(
-            type = UserType.GLOBAL_USER,
-            userId = messageEvent.sender.id
-        )
+        val globalUser = User.globalUser(messageEvent.sender.id)
 
         val isGroup = messageEvent is GroupMessageEvent
         val groupUser = if (isGroup) {
-            User(
-                type = UserType.GROUP_MEMBER,
-                userId = messageEvent.sender.id,
-                groupId = messageEvent.subject.id
-            )
+            User.member(messageEvent.sender.id,messageEvent.subject.id)
         } else {
             null
         }
@@ -318,10 +311,7 @@ class MessageFilter(
     ): Boolean {
         if (messageEvent !is GroupMessageEvent) return false
 
-        val user = User(
-            type = UserType.GROUP,
-            groupId = messageEvent.group.id
-        )
+        val user = User.group(groupId = messageEvent.group.id)
 
         var result: Boolean? = null
 
