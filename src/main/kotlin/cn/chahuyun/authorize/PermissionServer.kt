@@ -7,6 +7,7 @@ import cn.chahuyun.authorize.exception.ExceptionHandleApi
 import cn.chahuyun.authorize.utils.Log.debug
 import cn.chahuyun.authorize.utils.Log.warning
 import cn.chahuyun.hibernateplus.HibernateFactory
+import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.event.GlobalEventChannel
@@ -19,7 +20,7 @@ import org.reflections.util.ConfigurationBuilder
 object PermissionServer {
 
     fun init(
-        plugin: KotlinPlugin,
+        plugin: JvmPlugin,
         packageName: String,
         exceptionHandle: ExceptionHandleApi = ExceptionHandle(),
     ) {
