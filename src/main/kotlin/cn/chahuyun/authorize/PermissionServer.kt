@@ -18,6 +18,10 @@ import org.reflections.util.ConfigurationBuilder
 
 object PermissionServer {
 
+    fun init(plugin: JvmPlugin, packageName: String) {
+        init(plugin,packageName,ExceptionHandle())
+    }
+
     fun init(
         plugin: JvmPlugin,
         packageName: String,
