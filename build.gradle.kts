@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "cn.chahuyun"
-version = "1.1.1"
+version = "1.1.2"
 
 repositories {
     mavenCentral()
@@ -17,10 +17,6 @@ repositories {
 
 dependencies {
     implementation("cn.chahuyun:hibernate-plus:1.0.15")
-    implementation("org.projectlombok:lombok:1.18.26")
-    annotationProcessor("org.projectlombok:lombok:1.18.26")
-
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.8.2")
 }
 
 // hibernate 6 和 HikariCP 5 需要 jdk11

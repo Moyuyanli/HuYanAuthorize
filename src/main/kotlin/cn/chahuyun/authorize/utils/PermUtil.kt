@@ -17,15 +17,30 @@ object PermUtil {
     /**
      * 根据id查询权限组
      */
-    fun selectOneById(id: Long): PermGroup? {
+    fun selectPermGroupOneById(id: Long): PermGroup? {
         return HibernateFactory.selectOne(PermGroup::class.java, id)
     }
 
     /**
      * 根据名称查询权限组
      */
-    fun selectOneByName(name: String): PermGroup {
+    fun selectPermGroupOneByName(name: String): PermGroup? {
         return HibernateFactory.selectOne(PermGroup::class.java, "name", name)
+    }
+
+    /**
+     * 取一个权限组，如果不存在则新建
+     */
+    fun talkPermGroupByName(name: String): PermGroup {
+        return HibernateFactory.selectOne(PermGroup::class.java, "name", name)
+            ?: HibernateFactory.merge(PermGroup(name))
+    }
+
+    /**
+     * 获取已经注册的权限
+     */
+    fun takePerm(code: String): Perm {
+        return HibernateFactory.selectOne(Perm::class.java, "code", code) ?: throw RuntimeException("改权限未注册!")
     }
 
     /**

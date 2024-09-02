@@ -8,7 +8,6 @@ import cn.chahuyun.authorize.utils.Log.debug
 import cn.chahuyun.authorize.utils.Log.warning
 import cn.chahuyun.hibernateplus.HibernateFactory
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
-import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.events.MessageEvent
@@ -18,6 +17,10 @@ import org.reflections.util.ConfigurationBuilder
 
 
 object PermissionServer {
+
+    fun init(plugin: JvmPlugin, packageName: String) {
+        init(plugin,packageName,ExceptionHandle())
+    }
 
     fun init(
         plugin: JvmPlugin,
@@ -77,7 +80,7 @@ object PermissionServer {
      * @param plugin 注册插件
      * @param perms 权限
      */
-    fun registerPermCode(plugin: KotlinPlugin, vararg perms: Perm) {
+    fun registerPermCode(plugin: JvmPlugin, vararg perms: Perm) {
         val list = mutableListOf(PermConstant.NULL, PermConstant.ADMIN, PermConstant.OWNER)
 
         val filter = perms.filter {
@@ -92,7 +95,7 @@ object PermissionServer {
         registerPerm(plugin, filter)
     }
 
-    private fun registerPerm(plugin: KotlinPlugin, perms: List<Perm>) {
+    private fun registerPerm(plugin: JvmPlugin, perms: List<Perm>) {
         perms.forEach { perm ->
             HibernateFactory.selectOne(Perm::class.java, "code", perm.code)?.let {
                 debug("权限 ${it.code} 已注册! 注册插件: ${it.createPlugin}")

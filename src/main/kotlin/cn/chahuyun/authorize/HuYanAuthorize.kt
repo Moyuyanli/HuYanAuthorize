@@ -1,7 +1,6 @@
 package cn.chahuyun.authorize
 
 import cn.chahuyun.authorize.config.AuthorizeConfig
-import cn.chahuyun.authorize.constant.UserType
 import cn.chahuyun.authorize.entity.Perm
 import cn.chahuyun.authorize.entity.PermGroup
 import cn.chahuyun.authorize.entity.User
@@ -32,7 +31,7 @@ class HuYanAuthorize : KotlinPlugin(
         /**
          * 插件版本
          */
-        const val VERSION = "1.1.1"
+        const val VERSION = "1.1.2"
     }
 
     override fun onEnable() {
