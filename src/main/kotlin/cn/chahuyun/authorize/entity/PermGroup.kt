@@ -23,6 +23,7 @@ data class PermGroup(
     /**
      * 分组名称
      */
+    @Column(unique = true)
     var name: String? = null,
     /**
      * 权限列表

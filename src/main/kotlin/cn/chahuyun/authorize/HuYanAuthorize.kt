@@ -32,7 +32,7 @@ class HuYanAuthorize : KotlinPlugin(
         /**
          * 插件版本
          */
-        const val VERSION = "1.0.8"
+        const val VERSION = "1.1.0"
     }
 
     override fun onEnable() {
@@ -64,10 +64,7 @@ class HuYanAuthorize : KotlinPlugin(
 
         if (owner != 123456L) {
             // 创建 User 对象
-            val ownerUser = User(
-                type = UserType.GLOBAL_USER,
-                userId = owner
-            )
+            val ownerUser = User.globalUser(userId = owner)
 
             // 如果权限组为空
             if (permGroup.isNullOrEmpty()) {
