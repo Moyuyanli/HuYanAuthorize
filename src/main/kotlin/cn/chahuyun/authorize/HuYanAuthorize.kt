@@ -32,7 +32,7 @@ class HuYanAuthorize : KotlinPlugin(
         /**
          * 插件版本
          */
-        const val VERSION = "1.1.0"
+        const val VERSION = "1.1.1"
     }
 
     override fun onEnable() {
