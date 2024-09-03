@@ -76,6 +76,25 @@ object PermUtil {
     }
 
     /**
+     * 将这个权限添加到对应的权限组
+     */
+    fun addPermToPermGroupByPermGroup(perm: Perm, permGroup: PermGroup): Boolean {
+        permGroup.perms.add(perm)
+        HibernateFactory.merge(permGroup)
+        return true
+    }
+
+    /**
+     * 将这个权限添加到对应的权限组
+     */
+    fun addPermToPermGroupByName(perm: Perm, name: String): Boolean {
+        val group = talkPermGroupByName(name)
+        group.perms.add(perm)
+        HibernateFactory.merge(group)
+        return true
+    }
+
+    /**
      * 将这个用户从对应权限组删除
      */
     fun delUserFromPermGroupByName(user: User, name: String): Boolean {
