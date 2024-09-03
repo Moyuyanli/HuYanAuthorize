@@ -1,5 +1,6 @@
 package cn.chahuyun.authorize.entity
 
+import cn.chahuyun.hibernateplus.HibernateFactory
 import jakarta.persistence.*
 
 /**
@@ -60,6 +61,13 @@ data class PermGroup(
 
     override fun toString(): String {
         return "PermGroup(id=$id, parentId=$parentId, name=$name, perms=$perms, users=$users)"
+    }
+
+    /**
+     * 更新自己
+     */
+    fun save(): PermGroup {
+        return HibernateFactory.merge(this)
     }
 }
 
