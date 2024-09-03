@@ -236,7 +236,7 @@ class MessageFilter(
 
         val isGroup = messageEvent is GroupMessageEvent
         val groupUser = if (isGroup) {
-            User.member(messageEvent.sender.id,messageEvent.subject.id)
+            User.member(messageEvent.subject.id,messageEvent.sender.id)
         } else {
             null
         }
@@ -275,14 +275,15 @@ class MessageFilter(
                     //群管理权限校验
                     val filter = users.filter { it.type == UserType.GROUP_ADMIN }
                     if (filter.isNotEmpty()) {
-                        val user = filter[0]
-                        if (groupUser != null && user.groupId == groupUser.groupId) {
-                            if (messageEvent is GroupMessageEvent) {
-                                val member = messageEvent.group[groupUser.userId!!]
-                                if (member?.permission == MemberPermission.OWNER || member?.permission == MemberPermission.ADMINISTRATOR) {
-                                    result = result ?: true
-                                    temp = true
-                                    break
+                        for (user in filter) {
+                            if (groupUser != null && user.groupId == groupUser.groupId) {
+                                if (messageEvent is GroupMessageEvent) {
+                                    val member = messageEvent.group[groupUser.userId!!]
+                                    if (member?.permission == MemberPermission.OWNER || member?.permission == MemberPermission.ADMINISTRATOR) {
+                                        result = result ?: true
+                                        temp = true
+                                        break
+                                    }
                                 }
                             }
                         }

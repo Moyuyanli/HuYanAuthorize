@@ -24,7 +24,7 @@ class PermManager {
 
     @MessageAuthorize(
         text = ["进行测试"],
-        userPermissions = [PermConstant.OWNER]
+        userPermissions = [PermConstant.OWNER,PermConstant.ADMIN]
     )
     suspend fun test(messageEvent: MessageEvent) {
         messageEvent.subject.sendMessage(getSystemInfo())
