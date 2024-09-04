@@ -15,7 +15,7 @@ data class PermGroup(
      * id
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Int? = null,
     /**
      * 父id
@@ -39,8 +39,12 @@ data class PermGroup(
     /**
      * 用户列表
      */
-    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
-    @JoinColumn(name = "permGroup_id")
+    @ManyToMany(cascade = [CascadeType.PERSIST, CascadeType.MERGE], fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "auth_perm_group_map_user",
+        joinColumns = [JoinColumn(name = "perm_group_id")],
+        inverseJoinColumns = [JoinColumn(name = "user_id")]
+    )
     var users: MutableSet<User> = mutableSetOf(),
 ) {
 

@@ -125,7 +125,7 @@ object PermissionServer {
      */
     internal fun authorizePermRegister() {
         registerPerm(
-            HuYanAuthorize.INSTANCE,
+            HuYanAuthorize,
             mutableListOf(
                 Perm(
                     code = PermConstant.OWNER,

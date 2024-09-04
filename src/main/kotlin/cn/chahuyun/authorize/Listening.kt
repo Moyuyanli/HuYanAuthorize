@@ -14,6 +14,7 @@ import cn.chahuyun.authorize.utils.Log
 import cn.chahuyun.authorize.utils.Log.debug
 import cn.chahuyun.authorize.utils.Log.error
 import cn.chahuyun.hibernateplus.HibernateFactory
+import cn.hutool.core.date.DateUtil
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.events.GroupMessageEvent
@@ -120,10 +121,15 @@ class MessageFilter(
     ) {
         val annotation = method.getAnnotation(MessageAuthorize::class.java)
 
+
+
         debug("注册消息事件方法-> ${method.name}")
         channel.exceptionHandler { handleApi.handle(it) }
             .filter {
-                permFilter(it, annotation, methodType) && messageFilter(it, annotation)
+                val time = DateUtil.timer()
+                val result = permFilter(it, annotation, methodType) && messageFilter(it, annotation)
+                if (result) debug("${method.name} 匹配用时 ${time.intervalMs()} ms")
+                result
             }
             .subscribeAlways<MessageEvent>(
                 concurrency = annotation.concurrency,
@@ -131,7 +137,9 @@ class MessageFilter(
             ) {
                 if (method.parameterCount == 1) {
                     try {
+                        val timer = DateUtil.timer()
                         method.invoke(bean, it)
+                        debug("${method.name} 执行用时 ${timer.intervalMs()} ms")
                     } catch (e: Exception) {
                         handleApi.handle(e)
                     }
@@ -139,8 +147,10 @@ class MessageFilter(
                     // 创建 Continuation 实例
                     val continuation = ContinuationUtil.getContinuation()
                     try {
+                        val timer = DateUtil.timer()
                         // 通过反射调用 suspend 函数
                         method.invoke(bean, it, continuation)
+                        debug("${method.name} 执行用时 ${timer.intervalMs()} ms")
                     } catch (e: Exception) {
                         handleApi.handle(e)
                     }
@@ -236,7 +246,7 @@ class MessageFilter(
 
         val isGroup = messageEvent is GroupMessageEvent
         val groupUser = if (isGroup) {
-            User.member(messageEvent.subject.id,messageEvent.sender.id)
+            User.member(messageEvent.subject.id, messageEvent.sender.id)
         } else {
             null
         }

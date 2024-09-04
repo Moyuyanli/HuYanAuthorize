@@ -1,8 +1,6 @@
 package cn.chahuyun.authorize.constant
 
 
-import lombok.Getter
-
 /**
  * 匹配方式枚举
  *
@@ -73,8 +71,7 @@ enum class PermissionMatchingEnum {
 /**
  * 作用域类型
  */
-@Getter
-enum class UserType(private val valueTemplate: String) {
+enum class UserType(val valueTemplate: String) {
 
     /**
      * 全局用户

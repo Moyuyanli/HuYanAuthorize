@@ -1,10 +1,12 @@
 package cn.chahuyun.authorize
 
+import cn.chahuyun.authorize.command.AuthorizeCommand
 import cn.chahuyun.authorize.config.AuthorizeConfig
 import cn.chahuyun.authorize.entity.Perm
 import cn.chahuyun.authorize.entity.PermGroup
 import cn.chahuyun.authorize.entity.User
 import cn.chahuyun.hibernateplus.HibernateFactory
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 
@@ -12,33 +14,22 @@ import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 /**
  * @author Moyuyanli
  */
-class HuYanAuthorize : KotlinPlugin(
+object HuYanAuthorize : KotlinPlugin(
     JvmPluginDescription(
         id = "cn.chahuyun.HuYanAuthorize",
-        version = VERSION,
+        version = "1.1.5",
         name = "HuYanAuthorize"
     ) {
         author("Moyuyanli")
         info("壶言权限管理")
     }
 ) {
-    companion object {
-        /**
-         * 插件实例
-         */
-        val INSTANCE = HuYanAuthorize()
-
-        /**
-         * 插件版本
-         */
-        const val VERSION = "1.1.4"
-    }
 
     override fun onEnable() {
         // 加载配置
         AuthorizeConfig.reload()
         // 加载指令
-//        CommandManager.registerCommand(AuthorizeCommand, false)
+        AuthorizeCommand.register()
         // 初始化插件数据库
         DataManager.init(this)
         // 注册本插件的权限
@@ -106,6 +97,13 @@ class HuYanAuthorize : KotlinPlugin(
         if (HibernateFactory.merge(ownerPermGroup).id != 0) {
             logger.info("主人 $owner 已同步!")
         }
+    }
+
+    /**
+     * 获取主人
+     */
+    fun getOwner(): Long {
+        return AuthorizeConfig.owner
     }
 
 }

@@ -26,8 +26,8 @@ class PermManager {
         text = ["进行测试"],
         userPermissions = [PermConstant.OWNER,PermConstant.ADMIN]
     )
-    suspend fun test(messageEvent: MessageEvent) {
-        messageEvent.subject.sendMessage(getSystemInfo())
+    suspend fun test(event: MessageEvent) {
+        event.sendMessageQuery(getSystemInfo())
     }
 
     /**

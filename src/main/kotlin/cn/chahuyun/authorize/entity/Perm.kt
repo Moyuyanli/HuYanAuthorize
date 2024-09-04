@@ -12,7 +12,7 @@ data class Perm(
      * id
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Int? = null,
     /**
      * 权限code

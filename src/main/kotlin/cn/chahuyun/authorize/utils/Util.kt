@@ -67,8 +67,6 @@ object EventUtil {
 
 }
 
-
-@SuppressWarnings("all")
 fun getSystemInfo(): String {
     val osBean = ManagementFactory.getOperatingSystemMXBean()
     val memoryBean = ManagementFactory.getMemoryMXBean()
@@ -98,20 +96,19 @@ fun getSystemInfo(): String {
 
     // 格式化内存使用率
     val formattedMemoryUsagePercentage = "%.2f".format(memoryUsagePercentage)
+    val formattedCpuUsage = if (cpuUsage > 0.0) "${cpuUsage}%" else "N/A"
+
     return """
         操作系统: $osName
         运行时间: $upTime 分钟
-        CPU 使用率: ${cpuUsage.toString().takeIf { it != "0.0" } ?: "N/A"}%
+        CPU 使用率: $formattedCpuUsage
         内存:
           - 总大小: ${totalMemory / (1024 * 1024)} MB
           - 已使用: ${usedMemory / (1024 * 1024)} MB
           - 未使用: ${freeMemory / (1024 * 1024)} MB
           - 使用率: ${formattedMemoryUsagePercentage}%
     """.trimIndent()
-
-
 }
-
 
 
 

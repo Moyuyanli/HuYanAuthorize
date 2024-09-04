@@ -29,8 +29,8 @@ class DataManager {
                     configuration.user = mysqlUser
                     configuration.password = mysqlPassword
                 }
-                H2 -> configuration.address = HuYanAuthorize.INSTANCE.dataFolderPath.resolve("authorize.h2.mv.db").toString()
-                SQLITE -> configuration.address = HuYanAuthorize.INSTANCE.dataFolderPath.resolve("authorize.mv.db").toString()
+                H2 -> configuration.address = HuYanAuthorize.dataFolderPath.resolve("authorize.h2.mv.db").toString()
+                SQLITE -> configuration.address = HuYanAuthorize.dataFolderPath.resolve("authorize.mv.db").toString()
             }
 
             HibernatePlusService.loadingService(configuration)
