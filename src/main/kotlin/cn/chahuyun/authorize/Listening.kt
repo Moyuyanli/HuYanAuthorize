@@ -128,7 +128,7 @@ class MessageFilter(
             .filter {
                 val time = DateUtil.timer()
                 val result = permFilter(it, annotation, methodType) && messageFilter(it, annotation)
-                debug("${method.name} 匹配用时 ${time.intervalMs()} ms")
+                if (result) debug("${method.name} 匹配用时 ${time.intervalMs()} ms")
                 result
             }
             .subscribeAlways<MessageEvent>(
@@ -139,7 +139,7 @@ class MessageFilter(
                     try {
                         val timer = DateUtil.timer()
                         method.invoke(bean, it)
-                        debug("${method.name} 执行用时 ${timer.intervalMs()}")
+                        debug("${method.name} 执行用时 ${timer.intervalMs()} ms")
                     } catch (e: Exception) {
                         handleApi.handle(e)
                     }
@@ -150,7 +150,7 @@ class MessageFilter(
                         val timer = DateUtil.timer()
                         // 通过反射调用 suspend 函数
                         method.invoke(bean, it, continuation)
-                        debug("${method.name} 执行用时 ${timer.intervalMs()}")
+                        debug("${method.name} 执行用时 ${timer.intervalMs()} ms")
                     } catch (e: Exception) {
                         handleApi.handle(e)
                     }
