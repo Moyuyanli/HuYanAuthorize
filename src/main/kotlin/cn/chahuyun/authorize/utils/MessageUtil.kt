@@ -159,5 +159,11 @@ object MessageUtil {
         return event.subject.sendMessage(QuoteReply(event.message).plus(PlainText(String.format(format, *params))))
     }
 
+    suspend fun MessageEvent.sendMessageQuery(message: MessageChain): MessageReceipt<Contact> {
+        return this.subject.sendMessage(QuoteReply(this.message).plus(message))
+    }
 
+    suspend fun MessageEvent.sendMessageQuery(text: String): MessageReceipt<Contact> {
+        return this.subject.sendMessage(QuoteReply(this.message).plus(PlainText(text)))
+    }
 }
