@@ -1,10 +1,12 @@
 package cn.chahuyun.authorize
 
+import cn.chahuyun.authorize.command.AuthorizeCommand
 import cn.chahuyun.authorize.config.AuthorizeConfig
 import cn.chahuyun.authorize.entity.Perm
 import cn.chahuyun.authorize.entity.PermGroup
 import cn.chahuyun.authorize.entity.User
 import cn.chahuyun.hibernateplus.HibernateFactory
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 
@@ -38,7 +40,7 @@ class HuYanAuthorize : KotlinPlugin(
         // 加载配置
         AuthorizeConfig.reload()
         // 加载指令
-//        CommandManager.registerCommand(AuthorizeCommand, false)
+        AuthorizeCommand.register()
         // 初始化插件数据库
         DataManager.init(this)
         // 注册本插件的权限
@@ -106,6 +108,13 @@ class HuYanAuthorize : KotlinPlugin(
         if (HibernateFactory.merge(ownerPermGroup).id != 0) {
             logger.info("主人 $owner 已同步!")
         }
+    }
+
+    /**
+     * 获取主人
+     */
+    fun getOwner(): Long {
+        return AuthorizeConfig.owner
     }
 
 }
