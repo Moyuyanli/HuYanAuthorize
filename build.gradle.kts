@@ -17,6 +17,7 @@ repositories {
 
 dependencies {
     implementation("cn.chahuyun:hibernate-plus:1.0.15")
+    implementation("cn.hutool:hutool-core:5.8.22")
 }
 
 // hibernate 6 和 HikariCP 5 需要 jdk11
