@@ -6,10 +6,11 @@ import cn.chahuyun.authorize.entity.User
 import cn.chahuyun.authorize.utils.PermUtil
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
+import net.mamoe.mirai.console.plugin.version
 
 
 object AuthorizeCommand : CompositeCommand(
-    HuYanAuthorize.INSTANCE, "hya",
+    HuYanAuthorize, "hya",
     description = "壶言权限管理指令"
 ) {
 
@@ -30,7 +31,7 @@ object AuthorizeCommand : CompositeCommand(
     @SubCommand("v")
     @Description("查询当前插件版本")
     suspend fun CommandSender.version() {
-        val version = HuYanAuthorize.VERSION
+        val version = HuYanAuthorize.version
         sendMessage("壶言鉴权当前版本: $version")
     }
 

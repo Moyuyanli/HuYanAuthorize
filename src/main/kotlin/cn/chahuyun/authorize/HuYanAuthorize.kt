@@ -14,27 +14,16 @@ import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 /**
  * @author Moyuyanli
  */
-class HuYanAuthorize : KotlinPlugin(
+object HuYanAuthorize : KotlinPlugin(
     JvmPluginDescription(
         id = "cn.chahuyun.HuYanAuthorize",
-        version = VERSION,
+        version = "1.1.4",
         name = "HuYanAuthorize"
     ) {
         author("Moyuyanli")
         info("壶言权限管理")
     }
 ) {
-    companion object {
-        /**
-         * 插件实例
-         */
-        val INSTANCE = HuYanAuthorize()
-
-        /**
-         * 插件版本
-         */
-        const val VERSION = "1.1.4"
-    }
 
     override fun onEnable() {
         // 加载配置
