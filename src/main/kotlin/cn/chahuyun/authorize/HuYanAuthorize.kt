@@ -17,7 +17,7 @@ import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 object HuYanAuthorize : KotlinPlugin(
     JvmPluginDescription(
         id = "cn.chahuyun.HuYanAuthorize",
-        version = "1.1.5",
+        version = BuildConstants.VERSION,
         name = "HuYanAuthorize"
     ) {
         author("Moyuyanli")
