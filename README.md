@@ -22,7 +22,7 @@
 }
 ```
 
-在插件的onLoad方法中启用
+在插件的onEnable方法中启用
 
 java
 
