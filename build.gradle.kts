@@ -17,7 +17,7 @@ repositories {
 }
 
 dependencies {
-    implementation("cn.chahuyun:hibernate-plus:1.0.15")
+    implementation("cn.chahuyun:hibernate-plus:1.0.16")
     implementation("cn.hutool:hutool-core:5.8.22")
 }
 
