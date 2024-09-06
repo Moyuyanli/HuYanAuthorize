@@ -88,10 +88,18 @@ fun getSystemInfo(): String {
 
     // CPU 使用率
     var cpuUsage = 0.0
-    if (osBean.javaClass.name == "com.sun.management.OperatingSystemMXBean") {
-        // 如果是 Sun/Oracle JDK，我们可以使用扩展的 CPU 使用率方法
-        val sunOsBean = osBean as com.sun.management.OperatingSystemMXBean
-        cpuUsage = sunOsBean.systemCpuLoad * 100
+    try {
+        if (osName.startsWith("Linux")) {
+            val process = ProcessBuilder("top", "-bn1").redirectErrorStream(true).start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val usageRegex = Regex("(?<=l).+?(?= )")
+            val match = usageRegex.find(output)?.value
+            if (match != null) {
+                cpuUsage = match.toDoubleOrNull() ?: 0.0
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
 
     // 格式化内存使用率
@@ -109,6 +117,5 @@ fun getSystemInfo(): String {
           - 使用率: ${formattedMemoryUsagePercentage}%
     """.trimIndent()
 }
-
 
 
