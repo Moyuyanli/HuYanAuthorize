@@ -102,7 +102,7 @@ enum class UserType(val valueTemplate: String) {
  * @author Moyuyanli
  * @date 2023/8/11 16:40
  */
-object PermConstant {
+object AuthPerm {
 
     /**
      * 无权限

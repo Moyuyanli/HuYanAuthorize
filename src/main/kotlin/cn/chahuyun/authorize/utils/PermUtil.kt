@@ -1,5 +1,6 @@
 package cn.chahuyun.authorize.utils
 
+import cn.chahuyun.authorize.constant.AuthPerm
 import cn.chahuyun.authorize.entity.Perm
 import cn.chahuyun.authorize.entity.PermGroup
 import cn.chahuyun.authorize.entity.User
@@ -45,6 +46,8 @@ object PermUtil {
 
     /**
      * 检查这个用户，有没有这个权限
+     *
+     * @return true 有权限
      */
     fun checkUserHasPerm(user: User, code: String): Boolean {
         val selectOne = HibernateFactory.selectOne(Perm::class.java, "code", code)
@@ -110,4 +113,14 @@ object PermUtil {
 
         return true
     }
+
+    /**
+     * 检查这个人是否主人
+     *
+     * @return true 是
+     */
+    fun checkOwner(qq: Long): Boolean {
+        return checkUserHasPerm(UserUtil.globalUser(qq), AuthPerm.OWNER)
+    }
+
 }
