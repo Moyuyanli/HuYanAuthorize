@@ -1,7 +1,7 @@
 package cn.chahuyun.authorize.utils
 
 import cn.chahuyun.authorize.HuYanAuthorize
-import net.mamoe.mirai.console.plugin.jvm.JavaPlugin
+import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.utils.MiraiLogger
 
 /**
@@ -18,7 +18,7 @@ object Log {
      * 替换日志打印插件
      * @param instance 插件本身
      */
-    fun init(instance: JavaPlugin) {
+    fun init(instance: JvmPlugin) {
         LOGGER = instance.logger
     }
 
