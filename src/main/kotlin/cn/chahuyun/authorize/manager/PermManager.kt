@@ -4,7 +4,7 @@ import cn.chahuyun.authorize.EventComponent
 import cn.chahuyun.authorize.MessageAuthorize
 import cn.chahuyun.authorize.PermissionServer
 import cn.chahuyun.authorize.constant.MessageMatchingEnum
-import cn.chahuyun.authorize.constant.PermConstant
+import cn.chahuyun.authorize.constant.AuthPerm
 import cn.chahuyun.authorize.entity.Perm
 import cn.chahuyun.authorize.entity.PermGroup
 import cn.chahuyun.authorize.entity.PermGroupTree
@@ -24,7 +24,7 @@ class PermManager {
 
     @MessageAuthorize(
         text = ["进行测试"],
-        userPermissions = [PermConstant.OWNER,PermConstant.ADMIN]
+        userPermissions = [AuthPerm.OWNER,AuthPerm.ADMIN]
     )
     suspend fun test(event: MessageEvent) {
         event.sendMessageQuery(getSystemInfo())
@@ -36,7 +36,7 @@ class PermManager {
     @MessageAuthorize(
         text = ["\\+perm \\S+( %?\\S+)*"],
         messageMatching = MessageMatchingEnum.REGULAR,
-        userPermissions = [PermConstant.OWNER]
+        userPermissions = [AuthPerm.OWNER]
     )
     suspend fun addPermGroup(event: MessageEvent) {
         val content = event.message.contentToString()
@@ -109,7 +109,7 @@ class PermManager {
     @MessageAuthorize(
         text = ["-perm \\S+( %?\\S+)*"],
         messageMatching = MessageMatchingEnum.REGULAR,
-        userPermissions = [PermConstant.OWNER]
+        userPermissions = [AuthPerm.OWNER]
     )
     suspend fun delPermGroup(event: MessageEvent) {
         val content = event.message.contentToString()
@@ -167,7 +167,7 @@ class PermManager {
     @MessageAuthorize(
         text = ["=perm( \\S+)?"],
         messageMatching = MessageMatchingEnum.REGULAR,
-        userPermissions = [PermConstant.OWNER]
+        userPermissions = [AuthPerm.OWNER,AuthPerm.ADMIN]
     )
     suspend fun viewPerm(event: MessageEvent) {
         val subject = event.subject
