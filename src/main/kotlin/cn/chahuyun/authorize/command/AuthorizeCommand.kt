@@ -2,8 +2,8 @@ package cn.chahuyun.authorize.command
 
 import cn.chahuyun.authorize.HuYanAuthorize
 import cn.chahuyun.authorize.config.AuthorizeConfig
-import cn.chahuyun.authorize.entity.User
 import cn.chahuyun.authorize.utils.PermUtil
+import cn.chahuyun.authorize.utils.UserUtil
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.plugin.version
@@ -21,7 +21,7 @@ object AuthorizeCommand : CompositeCommand(
         AuthorizeConfig.owner = owner
         val permGroup = PermUtil.talkPermGroupByName("主人")
         permGroup.users.clear()
-        val ownerUser = User.globalUser(owner)
+        val ownerUser = UserUtil.globalUser(owner)
         permGroup.users.add(ownerUser)
         permGroup.save()
         sendMessage("主人设置成功!")
