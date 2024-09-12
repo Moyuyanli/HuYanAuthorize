@@ -155,15 +155,15 @@ object MessageUtil {
      * @author Moyuyanli
      * @date 2024/8/29 11:09
      */
-    suspend fun sendMessageQuery(event: MessageEvent, format: String, vararg params: Any?): MessageReceipt<Contact> {
+    suspend fun sendMessageQuote(event: MessageEvent, format: String, vararg params: Any?): MessageReceipt<Contact> {
         return event.subject.sendMessage(QuoteReply(event.message).plus(PlainText(String.format(format, *params))))
     }
 
-    suspend fun MessageEvent.sendMessageQuery(message: MessageChain): MessageReceipt<Contact> {
+    suspend fun MessageEvent.sendMessageQuote(message: MessageChain): MessageReceipt<Contact> {
         return this.subject.sendMessage(QuoteReply(this.message).plus(message))
     }
 
-    suspend fun MessageEvent.sendMessageQuery(text: String): MessageReceipt<Contact> {
+    suspend fun MessageEvent.sendMessageQuote(text: String): MessageReceipt<Contact> {
         return this.subject.sendMessage(QuoteReply(this.message).plus(PlainText(text)))
     }
 }

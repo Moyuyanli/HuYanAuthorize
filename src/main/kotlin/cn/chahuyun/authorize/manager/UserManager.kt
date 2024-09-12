@@ -6,7 +6,7 @@ import cn.chahuyun.authorize.constant.MessageMatchingEnum
 import cn.chahuyun.authorize.constant.AuthPerm
 import cn.chahuyun.authorize.entity.PermGroup
 import cn.chahuyun.authorize.utils.EventUtil
-import cn.chahuyun.authorize.utils.MessageUtil.sendMessageQuery
+import cn.chahuyun.authorize.utils.MessageUtil.sendMessageQuote
 import cn.chahuyun.authorize.utils.PermUtil
 import cn.chahuyun.authorize.utils.UserUtil
 import cn.chahuyun.hibernateplus.HibernateFactory
@@ -45,21 +45,21 @@ class UserManager {
         val one = HibernateFactory.selectOne(PermGroup::class.java, "name", group)
 
         if (one == null) {
-            sendMessageQuery(event, "权限组 $group 不存在!")
+            sendMessageQuote(event, "权限组 $group 不存在!")
             return
         }
 
         val user = UserUtil.globalUser(userId)
 
         if (one.users.contains(user)) {
-            sendMessageQuery(event, "该用户已经存在于该权限组了!")
+            sendMessageQuote(event, "该用户已经存在于该权限组了!")
             return
         }
 
         one.users.add(user)
         HibernateFactory.merge(one)
 
-        sendMessageQuery(event, "${user.toUserName()} 成功添加到权限组 ${one.name}")
+        sendMessageQuote(event, "${user.toUserName()} 成功添加到权限组 ${one.name}")
     }
 
     @MessageAuthorize(
@@ -79,21 +79,21 @@ class UserManager {
         val one = HibernateFactory.selectOne(PermGroup::class.java, "name", s)
 
         if (one == null) {
-            sendMessageQuery(event, "权限组 ${split[1]} 不存在!")
+            sendMessageQuote(event, "权限组 ${split[1]} 不存在!")
             return
         }
 
         val user = UserUtil.group(event.group.id)
 
         if (one.users.contains(user)) {
-            sendMessageQuery(event, "该群已经存在于该权限组了!")
+            sendMessageQuote(event, "该群已经存在于该权限组了!")
             return
         }
 
         one.users.add(user)
         HibernateFactory.merge(one)
 
-        sendMessageQuery(event, "${user.toUserName()} 成功添加到权限组 ${one.name}")
+        sendMessageQuote(event, "${user.toUserName()} 成功添加到权限组 ${one.name}")
     }
 
     @MessageAuthorize(
@@ -113,21 +113,21 @@ class UserManager {
         val one = HibernateFactory.selectOne(PermGroup::class.java, "name", s)
 
         if (one == null) {
-            sendMessageQuery(event, "权限组 $s 不存在!")
+            sendMessageQuote(event, "权限组 $s 不存在!")
             return
         }
 
         val user = UserUtil.groupAdmin(event.group.id)
 
         if (one.users.contains(user)) {
-            sendMessageQuery(event, "该管理用户已经存在于该权限组了!")
+            sendMessageQuote(event, "该管理用户已经存在于该权限组了!")
             return
         }
 
         one.users.add(user)
         HibernateFactory.merge(one)
 
-        sendMessageQuery(event, "${user.toUserName()} 成功添加到权限组 ${one.name}")
+        sendMessageQuote(event, "${user.toUserName()} 成功添加到权限组 ${one.name}")
     }
 
 
@@ -150,21 +150,21 @@ class UserManager {
         val one = HibernateFactory.selectOne(PermGroup::class.java, "name", permGroup)
 
         if (one == null) {
-            sendMessageQuery(event, "权限组 $permGroup 不存在!")
+            sendMessageQuote(event, "权限组 $permGroup 不存在!")
             return
         }
 
         val user = UserUtil.member(event.group.id,userId)
 
         if (one.users.contains(user)) {
-            sendMessageQuery(event, "该群成员已经存在于该权限组了!")
+            sendMessageQuote(event, "该群成员已经存在于该权限组了!")
             return
         }
 
         one.users.add(user)
         HibernateFactory.merge(one)
 
-        sendMessageQuery(event, "${user.toUserName()} 成功添加到权限组 ${one.name}")
+        sendMessageQuote(event, "${user.toUserName()} 成功添加到权限组 ${one.name}")
     }
 
     //todo 删除用户，查看用户
