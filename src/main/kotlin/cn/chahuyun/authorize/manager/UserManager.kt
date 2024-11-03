@@ -2,8 +2,8 @@ package cn.chahuyun.authorize.manager
 
 import cn.chahuyun.authorize.EventComponent
 import cn.chahuyun.authorize.MessageAuthorize
-import cn.chahuyun.authorize.constant.MessageMatchingEnum
 import cn.chahuyun.authorize.constant.AuthPerm
+import cn.chahuyun.authorize.constant.MessageMatchingEnum
 import cn.chahuyun.authorize.entity.PermGroup
 import cn.chahuyun.authorize.utils.EventUtil
 import cn.chahuyun.authorize.utils.MessageUtil.sendMessageQuote
@@ -154,7 +154,7 @@ class UserManager {
             return
         }
 
-        val user = UserUtil.member(event.group.id,userId)
+        val user = UserUtil.member(event.group.id, userId)
 
         if (one.users.contains(user)) {
             sendMessageQuote(event, "该群成员已经存在于该权限组了!")
@@ -171,7 +171,7 @@ class UserManager {
     @MessageAuthorize(
         text = ["-global (\\[mirai:at:)?\\d+]? \\S+"],
         messageMatching = MessageMatchingEnum.REGULAR,
-        userPermissions = [PermConstant.OWNER, PermConstant.ADMIN]
+        userPermissions = [AuthPerm.OWNER, AuthPerm.ADMIN]
     )
     suspend fun delGlobalUser(event: MessageEvent) {
         val split = content(event)
@@ -189,27 +189,27 @@ class UserManager {
         val one = HibernateFactory.selectOne(PermGroup::class.java, "name", split[2])
 
         if (one == null) {
-            sendMessageQuery(event, "权限组 ${split[2]} 不存在!")
+            event.sendMessageQuote("权限组 ${split[2]} 不存在!")
             return
         }
 
-        val user = User.globalUser(userId)
+        val user = UserUtil.globalUser(userId)
 
         if (!one.users.contains(user)) {
-            sendMessageQuery(event, "该用户不存在于该权限组!")
+            event.sendMessageQuote("该用户不存在于该权限组!")
             return
         }
 
         one.users.remove(user)
         HibernateFactory.merge(one)
 
-        sendMessageQuery(event, "${user.toUserName()} 成功删除于权限组 ${one.name}")
+        event.sendMessageQuote("${user.toUserName()} 成功删除于权限组 ${one.name}")
     }
 
     @MessageAuthorize(
         text = ["-group \\S+"],
         messageMatching = MessageMatchingEnum.REGULAR,
-        userPermissions = [PermConstant.OWNER, PermConstant.ADMIN]
+        userPermissions = [AuthPerm.OWNER, AuthPerm.ADMIN]
     )
     suspend fun delGroup(event: GroupMessageEvent) {
         val split = content(event)
@@ -218,27 +218,27 @@ class UserManager {
         val one = HibernateFactory.selectOne(PermGroup::class.java, "name", s)
 
         if (one == null) {
-            sendMessageQuery(event, "权限组 ${split[1]} 不存在!")
+            event.sendMessageQuote("权限组 ${split[1]} 不存在!")
             return
         }
 
-        val user = User.group(event.group.id)
+        val user = UserUtil.group(event.group.id)
 
         if (!one.users.contains(user)) {
-            sendMessageQuery(event, "该群不存在于该权限组!")
+            event.sendMessageQuote("该群不存在于该权限组!")
             return
         }
 
         one.users.remove(user)
         HibernateFactory.merge(one)
 
-        sendMessageQuery(event, "${user.toUserName()} 成功删除于权限组 ${one.name}")
+        event.sendMessageQuote("${user.toUserName()} 成功删除于权限组 ${one.name}")
     }
 
     @MessageAuthorize(
         text = ["-admin \\S+"],
         messageMatching = MessageMatchingEnum.REGULAR,
-        userPermissions = [PermConstant.OWNER, PermConstant.ADMIN]
+        userPermissions = [AuthPerm.OWNER, AuthPerm.ADMIN]
     )
     suspend fun delGroupAdmin(event: GroupMessageEvent) {
         val split = content(event)
@@ -246,28 +246,28 @@ class UserManager {
         val one = HibernateFactory.selectOne(PermGroup::class.java, "name", split[1])
 
         if (one == null) {
-            sendMessageQuery(event, "权限组 ${split[1]} 不存在!")
+            event.sendMessageQuote("权限组 ${split[1]} 不存在!")
             return
         }
 
-        val user = User.groupAdmin(event.group.id)
+        val user = UserUtil.groupAdmin(event.group.id)
 
         if (!one.users.contains(user)) {
-            sendMessageQuery(event, "该管理用户不存在于该权限组!")
+            event.sendMessageQuote("该管理用户不存在于该权限组!")
             return
         }
 
         one.users.remove(user)
         HibernateFactory.merge(one)
 
-        sendMessageQuery(event, "${user.toUserName()} 成功删除于权限组 ${one.name}")
+        event.sendMessageQuote("${user.toUserName()} 成功删除于权限组 ${one.name}")
     }
 
 
     @MessageAuthorize(
         text = ["\\-member (\\[mirai:at:)?\\d+]? \\S+"],
         messageMatching = MessageMatchingEnum.REGULAR,
-        userPermissions = [PermConstant.OWNER, PermConstant.ADMIN]
+        userPermissions = [AuthPerm.OWNER, AuthPerm.ADMIN]
     )
     suspend fun delMember(event: GroupMessageEvent) {
         val split = content(event)
@@ -278,21 +278,21 @@ class UserManager {
         val one = HibernateFactory.selectOne(PermGroup::class.java, "name", split[2])
 
         if (one == null) {
-            sendMessageQuery(event, "权限组 ${split[2]} 不存在!")
+            event.sendMessageQuote("权限组 ${split[2]} 不存在!")
             return
         }
 
-        val user = User.member(event.group.id, userId)
+        val user = UserUtil.member(event.group.id, userId)
 
         if (!one.users.contains(user)) {
-            sendMessageQuery(event, "该群成员不存在于该权限组!")
+            event.sendMessageQuote("该群成员不存在于该权限组!")
             return
         }
 
         one.users.remove(user)
         HibernateFactory.merge(one)
 
-        sendMessageQuery(event, "${user.toUserName()} 成功删除于权限组 ${one.name}")
+        event.sendMessageQuote("${user.toUserName()} 成功删除于权限组 ${one.name}")
     }
 
     //todo 删除用户，查看用户
