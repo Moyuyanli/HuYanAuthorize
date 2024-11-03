@@ -1,13 +1,14 @@
 package cn.chahuyun.authorize.utils
 
+import cn.hutool.core.date.BetweenFormatter
+import cn.hutool.core.date.DateUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.message.data.At
 import java.lang.management.ManagementFactory
-import java.time.Duration
-import java.time.Instant
+import java.util.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 
@@ -84,7 +85,7 @@ fun getSystemInfo(): String {
 
     // 获取当前进程的启动时间
     val startTime = runtimeBean.startTime
-    val upTime = Duration.between(Instant.ofEpochMilli(startTime), Instant.now()).toMinutes()
+    val upTime = DateUtil.formatBetween(DateUtil.date(startTime), Date(), BetweenFormatter.Level.DAY)
 
     // CPU 使用率
     var cpuUsage = 0.0
@@ -108,7 +109,7 @@ fun getSystemInfo(): String {
 
     return """
         操作系统: $osName
-        运行时间: $upTime 分钟
+        运行时间: $upTime 
         CPU 使用率: $formattedCpuUsage
         内存:
           - 总大小: ${totalMemory / (1024 * 1024)} MB
