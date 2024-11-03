@@ -5,6 +5,7 @@ import cn.chahuyun.authorize.config.AuthorizeConfig
 import cn.chahuyun.authorize.entity.Perm
 import cn.chahuyun.authorize.entity.PermGroup
 import cn.chahuyun.authorize.entity.User
+import cn.chahuyun.authorize.utils.UserUtil
 import cn.chahuyun.hibernateplus.HibernateFactory
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
@@ -35,7 +36,7 @@ object HuYanAuthorize : KotlinPlugin(
         // 注册本插件的权限
         PermissionServer.authorizePermRegister()
         // 添加本插件的注册消息
-        PermissionServer.init(this, "cn.chahuyun.authorize.manager")
+        PermissionServer.registerMessageEvent(this, "cn.chahuyun.authorize.manager")
         // 尝试同步主人
         syncOwner()
         logger.info("HuYanAuthorize plugin loaded!")
@@ -54,7 +55,7 @@ object HuYanAuthorize : KotlinPlugin(
 
         if (owner != 123456L) {
             // 创建 User 对象
-            val ownerUser = User.globalUser(userId = owner)
+            val ownerUser = UserUtil.globalUser(userId = owner)
 
             // 如果权限组为空
             if (permGroup.isNullOrEmpty()) {

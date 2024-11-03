@@ -1,10 +1,10 @@
 package cn.chahuyun.authorize
 
-import cn.chahuyun.authorize.match.CustomPattern
 import cn.chahuyun.authorize.constant.MessageConversionEnum
 import cn.chahuyun.authorize.constant.MessageMatchingEnum
-import cn.chahuyun.authorize.constant.PermConstant
+import cn.chahuyun.authorize.constant.AuthPerm
 import cn.chahuyun.authorize.constant.PermissionMatchingEnum
+import cn.chahuyun.authorize.match.CustomPattern
 import net.mamoe.mirai.event.ConcurrencyKind
 import net.mamoe.mirai.event.EventPriority
 import kotlin.reflect.KClass
@@ -68,7 +68,7 @@ annotation class MessageAuthorize(
      * 默认:空
      *
      */
-    val userPermissions: Array<String> = [PermConstant.NULL],
+    val userPermissions: Array<String> = [AuthPerm.NULL],
 
     /**
      * 用户权限匹配方式
@@ -85,7 +85,7 @@ annotation class MessageAuthorize(
      * 默认:空
      *
      */
-    val groupPermissions: Array<String> = [PermConstant.NULL],
+    val groupPermissions: Array<String> = [AuthPerm.NULL],
 
     /**
      * 群权限匹配方式
@@ -100,6 +100,12 @@ annotation class MessageAuthorize(
      * 用户权限与群权限关联方式
      */
     val userInGroupPermissionsAssociation: PermissionMatchingEnum = PermissionMatchingEnum.AND,
+
+
+    /**
+     * 黑名单权限，匹配到任意一个即成功
+     */
+    val blackPermissions: Array<String> = [AuthPerm.NULL],
 
     /**
      * 优先级

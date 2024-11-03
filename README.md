@@ -28,13 +28,13 @@ java
 
 ```java
     //添加本插件的注册消息包信息
-    PermissionServer.INSTANCE.init(this,"cn.chahuyun.authorize.event");
+    PermissionServer.INSTANCE.registerMessageEvent(this,"cn.chahuyun.authorize.event");
 ```
 
 kotlin
 
 ```kotlin
-    PermissionServer.init(this, "cn.chahuyun.authorize.event")
+    PermissionServer.registerMessageEvent(this, "cn.chahuyun.authorize.event")
 
 ```
 
@@ -154,7 +154,7 @@ suspend fun reply(event: MessageEvent) {
 
 权限是本插件的核心，用于对整个消息注册做控制。
 
-才用的是`code`形式，是`String`字符串。
+采用的是`code`形式，是`String`字符串。
 
 本插件默认权限：
 
@@ -164,6 +164,14 @@ suspend fun reply(event: MessageEvent) {
 不可使用的code:
 
 * `null` 表明无权限
+
+使用方法:
+
+```kotlin
+AuthPerm.OWNER
+AuthPerm.ADMIN
+AuthPerm.NULL
+```
 
 ### 自定义注册权限
 
@@ -185,6 +193,11 @@ java
 注册成功后，会打印debug日志显示是否注册成功，或者该权限是否被别的插件注册。
 
 然后就可以在`MessageAuthorize`中的权限列表使用了。
+
+注意:
+
+* 这里注册用的权限是新建的，仅供于注册用
+* 想要使用注册后的权限，请使用下面的工具获取
 
 ### 操作权限
 
@@ -245,6 +258,16 @@ java
 
 还开发一些好用的工具类，供大家使用。
 
+### 消息事件注册(PermissionServer)
+
+[PermissionServer.kt](https://github.com/Moyuyanli/HuYanAuthorize/blob/master/src/main/kotlin/cn/chahuyun/authorize/PermissionServer.kt)
+
+#### 带指令前缀的注册
+
+`fun registerMessageEvent(plugin: JvmPlugin, packageName: String, prefix: String)`
+
+指令前缀可为`""`。
+
 ### 权限操作工具类(PermUtil)
 
 [PermUtil.kt](https://github.com/Moyuyanli/HuYanAuthorize/blob/master/src/main/kotlin/cn/chahuyun/authorize/utils/PermUtil.kt)
@@ -300,7 +323,7 @@ PermUtil.addUserToPermGroupByName(group, "测试组")
 
 ### 用户的操作(User)
 
-[User.kt](https://github.com/Moyuyanli/HuYanAuthorize/blob/master/src/main/kotlin/cn/chahuyun/authorize/entity/User.kt)
+[UserUtil.kt](https://github.com/Moyuyanli/HuYanAuthorize/blob/master/src/main/kotlin/cn/chahuyun/authorize/utils/UserUtil.kt)
 
 #### 获取用户
 
@@ -312,15 +335,15 @@ PermUtil.addUserToPermGroupByName(group, "测试组")
 kotlin
 
 ```kotlin
-    User.group(390444068)
-User.member(390444068, 572490972)
+    UserUtil.group(390444068)
+UserUtil.member(390444068, 572490972)
 ```
 
 java
 
 ```java
-    User.Companion.group(390444068L);
-    User.Companion.
+    UserUtil.INSTANCE.group(390444068L);
+    UserUtil.INSTANCE.
 
 member(390444068L,572490972L);
 ```
@@ -369,9 +392,10 @@ Log.INSTANCE.info("这是%s日志","一个");
 fun init(
     plugin: JvmPlugin,
     packageName: String,
-    exceptionHandle: ExceptionHandleApi = ExceptionHandle(),
+    exceptionHandle: ExceptionHandleApi = ExceptionHandle()
 )
 ```
+
 这是一个消息注册的重载方法，只需要传递自己实现的错误接口即可拿到错误。
 
 ### 获取主人
@@ -384,8 +408,11 @@ fun init(
 ```kotlin
     HuYanAuthorize.INSTANCE.getOwner()
 ```
+
 ```java
-HuYanAuthorize.Companion.getINSTANCE().getOwner();
+HuYanAuthorize.Companion.getINSTANCE().
+
+getOwner();
 ```
 
 ## 指令

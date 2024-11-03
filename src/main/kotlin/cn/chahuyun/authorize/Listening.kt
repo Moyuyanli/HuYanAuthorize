@@ -1,18 +1,19 @@
 package cn.chahuyun.authorize
 
 import cn.chahuyun.authorize.constant.MessageConversionEnum.*
-import cn.chahuyun.authorize.constant.PermConstant
+import cn.chahuyun.authorize.constant.AuthPerm
 import cn.chahuyun.authorize.constant.PermissionMatchingEnum
 import cn.chahuyun.authorize.constant.PermissionMatchingEnum.AND
 import cn.chahuyun.authorize.constant.PermissionMatchingEnum.OR
 import cn.chahuyun.authorize.constant.UserType
 import cn.chahuyun.authorize.entity.Perm
-import cn.chahuyun.authorize.entity.User
 import cn.chahuyun.authorize.exception.ExceptionHandleApi
 import cn.chahuyun.authorize.utils.ContinuationUtil
 import cn.chahuyun.authorize.utils.Log
 import cn.chahuyun.authorize.utils.Log.debug
 import cn.chahuyun.authorize.utils.Log.error
+import cn.chahuyun.authorize.utils.PermUtil
+import cn.chahuyun.authorize.utils.UserUtil
 import cn.chahuyun.hibernateplus.HibernateFactory
 import cn.hutool.core.date.DateUtil
 import net.mamoe.mirai.contact.MemberPermission
@@ -55,11 +56,17 @@ interface Filter {
 class MessageFilter(
     private val channel: EventChannel<MessageEvent>,
     private val handleApi: ExceptionHandleApi,
+    private val prefix: String,
 ) : Filter {
 
     companion object {
-        fun register(classList: Set<Class<*>>, channel: EventChannel<MessageEvent>, handleApi: ExceptionHandleApi) {
-            val register = MessageFilter(channel, handleApi)
+        fun register(
+            classList: Set<Class<*>>,
+            channel: EventChannel<MessageEvent>,
+            handleApi: ExceptionHandleApi,
+            prefix: String,
+        ) {
+            val register = MessageFilter(channel, handleApi, prefix)
 
             for (clazz in classList) {
                 val name = clazz.name
@@ -177,8 +184,19 @@ class MessageFilter(
 
         val userPerms = annotation.userPermissions
         val groupPerms = annotation.groupPermissions
+        val blackPerms = annotation.blackPermissions
 
-        userPermMatch = if (userPerms.contains(PermConstant.NULL)) {
+        //匹配黑名单权限
+        if (!blackPerms.contains(AuthPerm.NULL) && !PermUtil.checkOwner(messageEvent.sender.id)) {
+            val u = userPermMatch(blackPerms, OR, messageEvent)
+            val g = groupPermMatch(blackPerms, OR, messageEvent)
+
+            if (u || g) {
+                return false
+            }
+        }
+
+        userPermMatch = if (userPerms.contains(AuthPerm.NULL)) {
             true
         } else {
             userPermMatch(userPerms, annotation.userPermissionsMatching, messageEvent)
@@ -188,7 +206,7 @@ class MessageFilter(
             return userPermMatch
         }
 
-        groupPermMatch = if (groupPerms.contains(PermConstant.NULL)) {
+        groupPermMatch = if (groupPerms.contains(AuthPerm.NULL)) {
             true
         } else {
             groupPermMatch(groupPerms, annotation.groupPermissionsMatching, messageEvent)
@@ -209,10 +227,19 @@ class MessageFilter(
      * @date 2024-8-20 16:18
      */
     override fun messageFilter(messageEvent: MessageEvent, annotation: MessageAuthorize): Boolean {
-        val message = when (annotation.messageConversion) {
+        var message = when (annotation.messageConversion) {
             CONTENT -> messageEvent.message.contentToString()
             MIRAI_CODE -> messageEvent.message.serializeToMiraiCode()
             JSON -> messageEvent.message.serializeToJsonString()
+        }
+
+        //匹配指令前缀
+        if (prefix.isNotBlank()) {
+            if (message.indexOf(prefix) == 0) {
+                message = message.substring(1)
+            } else {
+                return false
+            }
         }
 
         return when (annotation.messageMatching) {
@@ -242,11 +269,11 @@ class MessageFilter(
         messageEvent: MessageEvent,
     ): Boolean {
 
-        val globalUser = User.globalUser(messageEvent.sender.id)
+        val globalUser = UserUtil.globalUser(messageEvent.sender.id)
 
         val isGroup = messageEvent is GroupMessageEvent
         val groupUser = if (isGroup) {
-            User.member(messageEvent.subject.id, messageEvent.sender.id)
+            UserUtil.member(messageEvent.subject.id, messageEvent.sender.id)
         } else {
             null
         }
@@ -322,7 +349,7 @@ class MessageFilter(
     ): Boolean {
         if (messageEvent !is GroupMessageEvent) return false
 
-        val user = User.group(groupId = messageEvent.group.id)
+        val user = UserUtil.group(groupId = messageEvent.group.id)
 
         var result: Boolean? = null
 

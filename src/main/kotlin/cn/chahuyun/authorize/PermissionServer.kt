@@ -1,6 +1,6 @@
 package cn.chahuyun.authorize
 
-import cn.chahuyun.authorize.constant.PermConstant
+import cn.chahuyun.authorize.constant.AuthPerm
 import cn.chahuyun.authorize.entity.Perm
 import cn.chahuyun.authorize.exception.ExceptionHandle
 import cn.chahuyun.authorize.exception.ExceptionHandleApi
@@ -18,21 +18,64 @@ import org.reflections.util.ConfigurationBuilder
 
 object PermissionServer {
 
-    fun init(plugin: JvmPlugin, packageName: String) {
-        init(plugin,packageName,ExceptionHandle())
+    /**
+     * 注册消息事件
+     *
+     * 简单方法
+     *
+     * @author moyuyanli
+     */
+    fun registerMessageEvent(plugin: JvmPlugin, packageName: String) {
+        registerMessageEvent(plugin, packageName, ExceptionHandle(), "")
     }
 
-    fun init(
+    /**
+     * 注册消息事件
+     *
+     * 带指令前缀的方法
+     *
+     * @author moyuyanli
+     */
+    fun registerMessageEvent(plugin: JvmPlugin, packageName: String, prefix: String) {
+        registerMessageEvent(plugin, packageName, ExceptionHandle(), prefix)
+    }
+
+    /**
+     * 注册消息事件
+     *
+     * 带错误收集的方法
+     *
+     * @author moyuyanli
+     */
+    fun registerMessageEvent(plugin: JvmPlugin, packageName: String, exceptionHandle: ExceptionHandleApi) {
+        registerMessageEvent(plugin, packageName, exceptionHandle, "")
+    }
+
+    /**
+     * 注册消息事件
+     *
+     * 全参数方法
+     *
+     * 消息匹配前缀可为空，为空则没有前缀匹配
+     *
+     * @author moyuyanli
+     * @param plugin 插件
+     * @param packageName 事件包
+     * @param exceptionHandle 自定义异常处理
+     * @param prefix 消息匹配前缀
+     */
+    fun registerMessageEvent(
         plugin: JvmPlugin,
         packageName: String,
         exceptionHandle: ExceptionHandleApi = ExceptionHandle(),
+        prefix: String = "",
     ) {
         val eventChannel = GlobalEventChannel
         val classes = scanPackage(plugin.javaClass.classLoader, packageName)
 
         if (classes.isEmpty()) throw RuntimeException("注册类扫描为空!")
 
-        MessageFilter.register(classes, eventChannel.filterIsInstance(MessageEvent::class), exceptionHandle)
+        MessageFilter.register(classes, eventChannel.filterIsInstance(MessageEvent::class), exceptionHandle, prefix)
     }
 
     private fun scanPackage(loader: ClassLoader, packageName: String): MutableSet<Class<*>> {
@@ -81,7 +124,7 @@ object PermissionServer {
      * @param perms 权限
      */
     fun registerPermCode(plugin: JvmPlugin, vararg perms: Perm) {
-        val list = mutableListOf(PermConstant.NULL, PermConstant.ADMIN, PermConstant.OWNER)
+        val list = mutableListOf(AuthPerm.NULL, AuthPerm.ADMIN, AuthPerm.OWNER)
 
         val filter = perms.filter {
             if (list.contains(it.code)) {
@@ -128,11 +171,11 @@ object PermissionServer {
             HuYanAuthorize,
             mutableListOf(
                 Perm(
-                    code = PermConstant.OWNER,
+                    code = AuthPerm.OWNER,
                     description = "主人权限"
                 ),
                 Perm(
-                    code = PermConstant.ADMIN,
+                    code = AuthPerm.ADMIN,
                     description = "管理员权限"
                 ),
             )

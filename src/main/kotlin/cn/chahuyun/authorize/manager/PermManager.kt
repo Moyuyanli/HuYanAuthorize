@@ -4,11 +4,11 @@ import cn.chahuyun.authorize.EventComponent
 import cn.chahuyun.authorize.MessageAuthorize
 import cn.chahuyun.authorize.PermissionServer
 import cn.chahuyun.authorize.constant.MessageMatchingEnum
-import cn.chahuyun.authorize.constant.PermConstant
+import cn.chahuyun.authorize.constant.AuthPerm
 import cn.chahuyun.authorize.entity.Perm
 import cn.chahuyun.authorize.entity.PermGroup
 import cn.chahuyun.authorize.entity.PermGroupTree
-import cn.chahuyun.authorize.utils.MessageUtil.sendMessageQuery
+import cn.chahuyun.authorize.utils.MessageUtil.sendMessageQuote
 import cn.chahuyun.authorize.utils.getSystemInfo
 import cn.chahuyun.hibernateplus.HibernateFactory
 import net.mamoe.mirai.Bot
@@ -24,10 +24,10 @@ class PermManager {
 
     @MessageAuthorize(
         text = ["进行测试"],
-        userPermissions = [PermConstant.OWNER,PermConstant.ADMIN]
+        userPermissions = [AuthPerm.OWNER,AuthPerm.ADMIN]
     )
     suspend fun test(event: MessageEvent) {
-        event.sendMessageQuery(getSystemInfo())
+        event.sendMessageQuote(getSystemInfo())
     }
 
     /**
@@ -36,7 +36,7 @@ class PermManager {
     @MessageAuthorize(
         text = ["\\+perm \\S+( %?\\S+)*"],
         messageMatching = MessageMatchingEnum.REGULAR,
-        userPermissions = [PermConstant.OWNER]
+        userPermissions = [AuthPerm.OWNER]
     )
     suspend fun addPermGroup(event: MessageEvent) {
         val content = event.message.contentToString()
@@ -61,7 +61,7 @@ class PermManager {
                 val substring = s.substring(1)
                 val selectOne = HibernateFactory.selectOne(PermGroup::class.java, "name", substring)
                 if (selectOne == null) {
-                    sendMessageQuery(event, "父权限组 $substring 不存在!\n")
+                    sendMessageQuote(event, "父权限组 $substring 不存在!\n")
                     return
                 }
 
@@ -109,7 +109,7 @@ class PermManager {
     @MessageAuthorize(
         text = ["-perm \\S+( %?\\S+)*"],
         messageMatching = MessageMatchingEnum.REGULAR,
-        userPermissions = [PermConstant.OWNER]
+        userPermissions = [AuthPerm.OWNER]
     )
     suspend fun delPermGroup(event: MessageEvent) {
         val content = event.message.contentToString()
@@ -121,18 +121,18 @@ class PermManager {
 
         val one = HibernateFactory.selectOne(PermGroup::class.java, "name", split[1])
         if (one == null) {
-            sendMessageQuery(event, "权限组 ${split[1]} 不存在!")
+            sendMessageQuote(event, "权限组 ${split[1]} 不存在!")
             return
         }
 
         if (split.size == 2) {
             if (HibernateFactory.selectList(PermGroup::class.java, "parentId", one.id).isNotEmpty()) {
-                sendMessageQuery(event, "有权限组继承于本组,禁止删除!")
+                sendMessageQuote(event, "有权限组继承于本组,禁止删除!")
                 return
             }
 
             HibernateFactory.delete(one)
-            sendMessageQuery(event, "权限组 ${one.name} 已删除!")
+            sendMessageQuote(event, "权限组 ${one.name} 已删除!")
             return
         }
 
@@ -167,7 +167,7 @@ class PermManager {
     @MessageAuthorize(
         text = ["=perm( \\S+)?"],
         messageMatching = MessageMatchingEnum.REGULAR,
-        userPermissions = [PermConstant.OWNER]
+        userPermissions = [AuthPerm.OWNER,AuthPerm.ADMIN]
     )
     suspend fun viewPerm(event: MessageEvent) {
         val subject = event.subject
@@ -179,7 +179,7 @@ class PermManager {
         if (split.size == 2) {
             val one = HibernateFactory.selectOne(PermGroup::class.java, "name", split[1])
             if (one == null) {
-                sendMessageQuery(event, "权限组 ${split[1]} 不存在")
+                sendMessageQuote(event, "权限组 ${split[1]} 不存在")
                 return
             }
             val list = HibernateFactory.selectList(PermGroup::class.java, "parentId", one.parentId)
