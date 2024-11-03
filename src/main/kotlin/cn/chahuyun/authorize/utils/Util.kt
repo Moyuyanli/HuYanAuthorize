@@ -85,7 +85,7 @@ fun getSystemInfo(): String {
 
     // 获取当前进程的启动时间
     val startTime = runtimeBean.startTime
-    val upTime = DateUtil.formatBetween(DateUtil.date(startTime), Date(), BetweenFormatter.Level.DAY)
+    val upTime = DateUtil.formatBetween(DateUtil.date(startTime), Date(), BetweenFormatter.Level.MINUTE)
 
     // CPU 使用率
     var cpuUsage = 0.0
