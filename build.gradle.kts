@@ -16,11 +16,13 @@ plugins {
 }
 
 group = "cn.chahuyun"
-version = "1.2.1"
+version = "1.2.2"
 
 repositories {
-    mavenCentral()
-    maven("https://maven.aliyun.com/repository/public")
+    maven("https://nexus.jsdu.cn/repository/maven-public/")
+
+//    mavenCentral()
+//    maven("https://maven.aliyun.com/repository/public")
 }
 
 dependencies {

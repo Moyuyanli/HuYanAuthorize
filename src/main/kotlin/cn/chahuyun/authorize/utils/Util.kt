@@ -1,7 +1,5 @@
 package cn.chahuyun.authorize.utils
 
-import cn.hutool.core.date.BetweenFormatter
-import cn.hutool.core.date.DateUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.contact.NormalMember
@@ -9,6 +7,7 @@ import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.message.data.At
 import java.lang.management.ManagementFactory
 import java.util.*
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 
@@ -68,6 +67,7 @@ object EventUtil {
 
 }
 
+
 fun getSystemInfo(): String {
     val osBean = ManagementFactory.getOperatingSystemMXBean()
     val memoryBean = ManagementFactory.getMemoryMXBean()
@@ -80,23 +80,26 @@ fun getSystemInfo(): String {
     val heapMemoryUsage = memoryBean.heapMemoryUsage
     val totalMemory = heapMemoryUsage.max
     val usedMemory = heapMemoryUsage.used
-    val freeMemory = heapMemoryUsage.max - heapMemoryUsage.used
-    val memoryUsagePercentage = (usedMemory.toDouble() / totalMemory.toDouble()) * 100
+    val freeMemory = totalMemory - usedMemory
+    val memoryUsagePercentage = (usedMemory.toDouble() / totalMemory) * 100
 
     // 获取当前进程的启动时间
     val startTime = runtimeBean.startTime
-    val upTime = DateUtil.formatBetween(DateUtil.date(startTime), Date(), BetweenFormatter.Level.MINUTE)
+    val upTime = formatUptime(System.currentTimeMillis() - startTime)
 
     // CPU 使用率
     var cpuUsage = 0.0
     try {
         if (osName.startsWith("Linux")) {
-            val process = ProcessBuilder("top", "-bn1").redirectErrorStream(true).start()
-            val output = process.inputStream.bufferedReader().use { it.readText() }
-            val usageRegex = Regex("(?<=l).+?(?= )")
-            val match = usageRegex.find(output)?.value
+            val process = Runtime.getRuntime().exec(arrayOf("sh", "-c", "top -bn1 | grep '%Cpu(s)'"))
+            val reader = Scanner(process.inputStream).useDelimiter("\\A")
+            val output = if (reader.hasNext()) reader.next() else ""
+            val pattern = Regex("(?<=ni,|sy,|us,)\\s*(\\d+\\.\\d+)\\s+id")
+            val match = pattern.find(output)
+
             if (match != null) {
-                cpuUsage = match.toDoubleOrNull() ?: 0.0
+                val idle = match.groupValues[1].toDouble()
+                cpuUsage = 100.0 - idle
             }
         }
     } catch (e: Exception) {
@@ -105,7 +108,7 @@ fun getSystemInfo(): String {
 
     // 格式化内存使用率
     val formattedMemoryUsagePercentage = "%.2f".format(memoryUsagePercentage)
-    val formattedCpuUsage = if (cpuUsage > 0.0) "${cpuUsage}%" else "N/A"
+    val formattedCpuUsage = if (cpuUsage > 0.0) "%.1f%%".format(cpuUsage) else "N/A"
 
     return """
         操作系统: $osName
@@ -119,4 +122,15 @@ fun getSystemInfo(): String {
     """.trimIndent()
 }
 
+private fun formatUptime(millis: Long): String {
+    val days = TimeUnit.MILLISECONDS.toDays(millis)
+    val hours = TimeUnit.MILLISECONDS.toHours(millis) % 24
+    val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) % 60
+
+    return buildString {
+        if (days > 0) append("${days}天")
+        if (hours > 0) append("${hours}小时")
+        append("${minutes}分钟")
+    }
+}
 
