@@ -2,7 +2,7 @@ package cn.chahuyun.authorize.entity
 
 import cn.chahuyun.authorize.constant.UserType
 import cn.chahuyun.authorize.constant.UserType.*
-import cn.chahuyun.hibernateplus.HibernateFactory
+import cn.chahuyun.authorize.utils.UserUtil
 import jakarta.persistence.*
 import net.mamoe.mirai.Bot
 import java.util.*
@@ -43,12 +43,12 @@ data class User(
     /**
      * 仅供于 Hibernate 查询使用。
      *
-     * 需要创建 User 请使用伴生方法。
+     * 需要创建 User 请使用[UserUtil]方法。
      *
-     * @see User.globalUser
-     * @see User.group
-     * @see User.groupAdmin
-     * @see User.member
+     * @see UserUtil.globalUser
+     * @see UserUtil.group
+     * @see UserUtil.groupAdmin
+     * @see UserUtil.member
      *
      */
     constructor(type: UserType, groupId: Long?, userId: Long?) : this() {

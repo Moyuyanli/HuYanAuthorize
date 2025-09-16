@@ -10,6 +10,7 @@ import cn.chahuyun.hibernateplus.HibernateFactory
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
+import net.mamoe.mirai.utils.SilentLogger.warning
 
 
 /**
@@ -51,45 +52,36 @@ object HuYanAuthorize : KotlinPlugin(
 
         // 获取 "owner" 权限
         val selectOne = HibernateFactory.selectOne(Perm::class.java, "code", "owner")
-        val permGroup = selectOne?.permGroup
+        val permGroups = selectOne?.permGroup
 
-        if (owner != 123456L) {
-            // 创建 User 对象
-            val ownerUser = UserUtil.globalUser(userId = owner)
+        if (owner == 123456L) {
 
-            // 如果权限组为空
-            if (permGroup.isNullOrEmpty()) {
-                addOwnerPermGroup(selectOne, ownerUser)
-            } else {
-                // 查找名称为 "主人" 的权限组
-                val group = permGroup.find { it.name == "主人" }
-                if (group == null) {
-                    addOwnerPermGroup(selectOne, ownerUser)
-                } else {
-                    // 检查权限组中是否已经有该用户
-                    val find = group.users.find { it.userId == owner }
-                    if (find == null) {
-                        // 如果没有该用户，则添加
-                        addOwnerPermGroup(selectOne, ownerUser, group)
-                    }
+            if (permGroups.isNullOrEmpty()) {
+                warning("没有设置主人,请设置主人!")
+                return
+            }
+
+            permGroups.forEach {
+                if (it.parentId == null && it.users.isNotEmpty()) {
+                    AuthorizeConfig.owner = it.users.first().userId!!
                 }
             }
         } else {
-            // 如果 owner 的值为默认值 123456
-            // 查找权限组中除 123456 外的第一个用户
-            val otherUsers = permGroup?.flatMap { it.users }?.filter { it.userId != 123456L }
-            if (otherUsers?.isNotEmpty() == true) {
-                // 更新配置文件中的 owner
-                otherUsers.first().userId?.let { AuthorizeConfig.owner = it }
-            } else {
-                logger.warning("没有设置主人,请设置主人!")
+            permGroups?.first { it.parentId == null && it.name == "主人" }?.let {
+                if (!it.containsUser(owner)) {
+                    it.addUser(UserUtil.globalUser(owner))
+                    it.save()
+                }
+            } ?: run {
+                addOwnerPermGroup(selectOne, UserUtil.globalUser(owner))
             }
         }
+
     }
 
-    private fun addOwnerPermGroup(perm: Perm, owner: User, permGroup: PermGroup? = null) {
+    private fun addOwnerPermGroup(perm: Perm, owner: User) {
         // 创建权限组
-        val ownerPermGroup = permGroup ?: PermGroup(
+        val ownerPermGroup = PermGroup(
             name = "主人",
             perms = mutableSetOf(perm),
             users = mutableSetOf(owner)

@@ -3,12 +3,13 @@ package cn.chahuyun.authorize.manager
 import cn.chahuyun.authorize.EventComponent
 import cn.chahuyun.authorize.MessageAuthorize
 import cn.chahuyun.authorize.PermissionServer
-import cn.chahuyun.authorize.constant.MessageMatchingEnum
 import cn.chahuyun.authorize.constant.AuthPerm
+import cn.chahuyun.authorize.constant.MessageMatchingEnum
 import cn.chahuyun.authorize.entity.Perm
 import cn.chahuyun.authorize.entity.PermGroup
 import cn.chahuyun.authorize.entity.PermGroupTree
 import cn.chahuyun.authorize.utils.MessageUtil.sendMessageQuote
+import cn.chahuyun.authorize.utils.PermCache
 import cn.chahuyun.authorize.utils.getSystemInfo
 import cn.chahuyun.hibernateplus.HibernateFactory
 import net.mamoe.mirai.Bot
@@ -101,6 +102,8 @@ class PermManager {
 
         HibernateFactory.merge(permSon)
 
+        PermCache.refresh()
+
         builder.add("执行完成!")
         event.subject.sendMessage(builder.build())
     }
@@ -140,7 +143,7 @@ class PermManager {
         for (i in 2 until split.size) {
             val s = split[i]
 
-            if (one.contains(s)) {
+            if (one.containsPerm(s)) {
                 val find = one.perms.find { it.code == s }!!
 
                 one.perms.remove(find)
@@ -159,6 +162,7 @@ class PermManager {
             }
         }
 
+        PermCache.refresh()
         builder.add("执行完成!")
         event.subject.sendMessage(builder.build())
     }
@@ -197,6 +201,7 @@ class PermManager {
 
         appendChildNodes(builder, bot, subject, groupTree)
 
+        PermCache.refresh()
         subject.sendMessage(builder.build())
     }
 

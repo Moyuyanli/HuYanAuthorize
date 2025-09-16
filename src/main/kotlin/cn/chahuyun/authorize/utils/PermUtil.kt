@@ -5,6 +5,8 @@ import cn.chahuyun.authorize.entity.Perm
 import cn.chahuyun.authorize.entity.PermGroup
 import cn.chahuyun.authorize.entity.User
 import cn.chahuyun.hibernateplus.HibernateFactory
+import net.mamoe.mirai.utils.SilentLogger.debug
+import java.util.concurrent.ConcurrentHashMap
 
 
 /**
@@ -52,7 +54,7 @@ object PermUtil {
     fun checkUserHasPerm(user: User, code: String): Boolean {
         val selectOne = HibernateFactory.selectOne(Perm::class.java, "code", code)
         if (selectOne == null) {
-            Log.debug("权限不存在!")
+            debug("权限不存在!")
             return false
         }
         selectOne.permGroup.forEach {
@@ -123,4 +125,47 @@ object PermUtil {
         return checkUserHasPerm(UserUtil.globalUser(qq), AuthPerm.OWNER)
     }
 
+}
+
+/**
+ * 权限缓存
+ * 懒加载
+ */
+object PermCache {
+
+    @Volatile
+    private var loaded = false
+
+    private val cache = ConcurrentHashMap<String, Perm>()
+
+    fun get(code: String): Perm? {
+        // 快路径：已加载，直接查缓存
+        if (loaded) return cache[code]
+
+        // 慢路径：未加载，加锁初始化
+        synchronized(this) {
+            if (!loaded) {
+                loadAllPermsFromDatabase()
+                loaded = true
+            }
+        }
+        return cache[code]
+    }
+
+    private fun loadAllPermsFromDatabase() {
+        // 从 DB 查询所有已注册的权限
+        val perms = HibernateFactory.selectList(Perm::class.java)
+        for (perm in perms) {
+            cache[perm.code!!] = perm
+        }
+        debug("权限缓存已加载，共 ${perms.size} 项")
+    }
+
+    // 可选：提供手动刷新接口
+    fun refresh() {
+        synchronized(this) {
+            cache.clear()
+            loadAllPermsFromDatabase()
+        }
+    }
 }

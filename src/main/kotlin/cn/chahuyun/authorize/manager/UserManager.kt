@@ -7,6 +7,7 @@ import cn.chahuyun.authorize.constant.MessageMatchingEnum
 import cn.chahuyun.authorize.entity.PermGroup
 import cn.chahuyun.authorize.utils.EventUtil
 import cn.chahuyun.authorize.utils.MessageUtil.sendMessageQuote
+import cn.chahuyun.authorize.utils.PermCache
 import cn.chahuyun.authorize.utils.PermUtil
 import cn.chahuyun.authorize.utils.UserUtil
 import cn.chahuyun.hibernateplus.HibernateFactory
@@ -59,6 +60,7 @@ class UserManager {
         one.users.add(user)
         HibernateFactory.merge(one)
 
+        PermCache.refresh()
         sendMessageQuote(event, "${user.toUserName()} 成功添加到权限组 ${one.name}")
     }
 
@@ -93,6 +95,7 @@ class UserManager {
         one.users.add(user)
         HibernateFactory.merge(one)
 
+        PermCache.refresh()
         sendMessageQuote(event, "${user.toUserName()} 成功添加到权限组 ${one.name}")
     }
 
@@ -127,6 +130,7 @@ class UserManager {
         one.users.add(user)
         HibernateFactory.merge(one)
 
+        PermCache.refresh()
         sendMessageQuote(event, "${user.toUserName()} 成功添加到权限组 ${one.name}")
     }
 
@@ -164,6 +168,7 @@ class UserManager {
         one.users.add(user)
         HibernateFactory.merge(one)
 
+        PermCache.refresh()
         sendMessageQuote(event, "${user.toUserName()} 成功添加到权限组 ${one.name}")
     }
 
@@ -203,6 +208,7 @@ class UserManager {
         one.users.remove(user)
         HibernateFactory.merge(one)
 
+        PermCache.refresh()
         event.sendMessageQuote("${user.toUserName()} 成功删除于权限组 ${one.name}")
     }
 
@@ -232,6 +238,7 @@ class UserManager {
         one.users.remove(user)
         HibernateFactory.merge(one)
 
+        PermCache.refresh()
         event.sendMessageQuote("${user.toUserName()} 成功删除于权限组 ${one.name}")
     }
 
@@ -260,6 +267,7 @@ class UserManager {
         one.users.remove(user)
         HibernateFactory.merge(one)
 
+        PermCache.refresh()
         event.sendMessageQuote("${user.toUserName()} 成功删除于权限组 ${one.name}")
     }
 
@@ -292,6 +300,7 @@ class UserManager {
         one.users.remove(user)
         HibernateFactory.merge(one)
 
+        PermCache.refresh()
         event.sendMessageQuote("${user.toUserName()} 成功删除于权限组 ${one.name}")
     }
 

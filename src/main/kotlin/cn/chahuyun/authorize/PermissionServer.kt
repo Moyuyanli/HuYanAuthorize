@@ -4,13 +4,12 @@ import cn.chahuyun.authorize.constant.AuthPerm
 import cn.chahuyun.authorize.entity.Perm
 import cn.chahuyun.authorize.exception.ExceptionHandle
 import cn.chahuyun.authorize.exception.ExceptionHandleApi
-import cn.chahuyun.authorize.utils.Log.debug
-import cn.chahuyun.authorize.utils.Log.warning
 import cn.chahuyun.hibernateplus.HibernateFactory
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.utils.SilentLogger.warning
 import org.reflections.Reflections
 import org.reflections.scanners.Scanners
 import org.reflections.util.ConfigurationBuilder
@@ -161,6 +160,8 @@ object PermissionServer {
     fun checkPermExist(code: String): Boolean {
         return HibernateFactory.selectOne(Perm::class.java, "code", code) != null
     }
+
+
 
 
     /**

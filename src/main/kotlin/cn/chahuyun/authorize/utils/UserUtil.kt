@@ -15,9 +15,7 @@ object UserUtil {
             Pair("type", UserType.GLOBAL_USER),
             Pair("userId", userId)
         )
-        HibernateFactory.selectOne(User::class.java, map)?.let {
-            return it
-        } ?: return User(type = UserType.GLOBAL_USER, userId = userId)
+        return HibernateFactory.selectOne(User::class.java, map) ?: User(type = UserType.GLOBAL_USER, userId = userId)
     }
 
     /**
@@ -30,9 +28,7 @@ object UserUtil {
             Pair("type", UserType.GROUP),
             Pair("groupId", groupId)
         )
-        HibernateFactory.selectOne(User::class.java, map)?.let {
-            return it
-        } ?: return User(type = UserType.GROUP, groupId = groupId)
+        return HibernateFactory.selectOne(User::class.java, map) ?: User(type = UserType.GROUP, groupId = groupId)
     }
 
     /**
@@ -45,9 +41,7 @@ object UserUtil {
             Pair("type", UserType.GROUP_ADMIN),
             Pair("groupId", groupId)
         )
-        HibernateFactory.selectOne(User::class.java, map)?.let {
-            return it
-        } ?: return User(type = UserType.GROUP_ADMIN, groupId = groupId)
+        return HibernateFactory.selectOne(User::class.java, map) ?:  User(type = UserType.GROUP_ADMIN, groupId = groupId)
     }
 
     /**
@@ -61,8 +55,6 @@ object UserUtil {
             Pair("groupId", groupId),
             Pair("userId", userId)
         )
-        HibernateFactory.selectOne(User::class.java, map)?.let {
-            return it
-        } ?: return User(type = UserType.GROUP_MEMBER, groupId = groupId, userId = userId)
+        return   HibernateFactory.selectOne(User::class.java, map) ?:  User(type = UserType.GROUP_MEMBER, groupId = groupId, userId = userId)
     }
 }

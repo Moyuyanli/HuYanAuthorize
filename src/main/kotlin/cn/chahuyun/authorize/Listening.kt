@@ -1,26 +1,26 @@
 package cn.chahuyun.authorize
 
-import cn.chahuyun.authorize.constant.MessageConversionEnum.*
 import cn.chahuyun.authorize.constant.AuthPerm
+import cn.chahuyun.authorize.constant.MessageConversionEnum.*
 import cn.chahuyun.authorize.constant.PermissionMatchingEnum
 import cn.chahuyun.authorize.constant.PermissionMatchingEnum.AND
 import cn.chahuyun.authorize.constant.PermissionMatchingEnum.OR
 import cn.chahuyun.authorize.constant.UserType
-import cn.chahuyun.authorize.entity.Perm
+import cn.chahuyun.authorize.entity.User
 import cn.chahuyun.authorize.exception.ExceptionHandleApi
 import cn.chahuyun.authorize.utils.ContinuationUtil
-import cn.chahuyun.authorize.utils.Log
-import cn.chahuyun.authorize.utils.Log.debug
-import cn.chahuyun.authorize.utils.Log.error
+import cn.chahuyun.authorize.utils.PermCache
 import cn.chahuyun.authorize.utils.PermUtil
 import cn.chahuyun.authorize.utils.UserUtil
-import cn.chahuyun.hibernateplus.HibernateFactory
 import cn.hutool.core.date.DateUtil
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
+import net.mamoe.mirai.utils.SilentLogger.debug
+import net.mamoe.mirai.utils.SilentLogger.error
+import net.mamoe.mirai.utils.SilentLogger.warning
 import java.lang.reflect.Method
 import java.util.*
 import java.util.regex.Pattern
@@ -105,7 +105,7 @@ class MessageFilter(
                     val methodType = paramsType.asSubclass(MessageEvent::class.java)
                     execute(instance, it, channel.filterIsInstance(methodType), methodType)
                 } else {
-                    Log.warning("类[${instance.javaClass.name}]中方法[${it.name}]的参数类型异常，请检查!")
+                    warning("类[${instance.javaClass.name}]中方法[${it.name}]的参数类型异常，请检查!")
                 }
             }
     }
@@ -127,7 +127,6 @@ class MessageFilter(
         methodType: Class<out MessageEvent>,
     ) {
         val annotation = method.getAnnotation(MessageAuthorize::class.java)
-
 
 
         debug("注册消息事件方法-> ${method.name}")
@@ -236,7 +235,7 @@ class MessageFilter(
         //匹配指令前缀
         if (prefix.isNotBlank()) {
             if (message.indexOf(prefix) == 0) {
-                message = message.substring(1)
+                message = message.removePrefix(prefix)
             } else {
                 return false
             }
@@ -268,73 +267,63 @@ class MessageFilter(
         match: PermissionMatchingEnum,
         messageEvent: MessageEvent,
     ): Boolean {
-
         val globalUser = UserUtil.globalUser(messageEvent.sender.id)
-
         val isGroup = messageEvent is GroupMessageEvent
         val groupUser = if (isGroup) {
             UserUtil.member(messageEvent.subject.id, messageEvent.sender.id)
-        } else {
-            null
-        }
+        } else null
 
-        var result: Boolean? = null
-        var temp: Boolean
-
-        for (perm in perms) {
-            val one = HibernateFactory.selectOne(Perm::class.java, "code", perm)
-                ?: throw RuntimeException("权限 $perm 没有注册!")
-
-            val permGroup = one.permGroup
-            if (permGroup.isEmpty()) {
-                if (match == AND) return false else continue
-            }
-
-            temp = false
-            for (group in permGroup) {
-                val users = group.users
-
-                //全局用户权限校验
-                if (users.contains(globalUser)) {
-                    result = result ?: true
-                    temp = true
-                    break
-                }
-
-                if (isGroup) {
-                    //群用户校验
-                    if (users.contains(groupUser)) {
-                        result = result ?: true
-                        temp = true
-                        break
+        return when (match) {
+            OR -> {
+                for (perm in perms) {
+                    if (checkSinglePerm(perm, globalUser, groupUser, isGroup, messageEvent)) {
+                        return true
                     }
+                }
+                false
+            }
+            AND -> {
+                for (perm in perms) {
+                    if (!checkSinglePerm(perm, globalUser, groupUser, isGroup, messageEvent)) {
+                        return false
+                    }
+                }
+                true
+            }
+        }
+    }
 
-                    //群管理权限校验
-                    val filter = users.filter { it.type == UserType.GROUP_ADMIN }
-                    if (filter.isNotEmpty()) {
-                        for (user in filter) {
-                            if (groupUser != null && user.groupId == groupUser.groupId) {
-                                if (messageEvent is GroupMessageEvent) {
-                                    val member = messageEvent.group[groupUser.userId!!]
-                                    if (member?.permission == MemberPermission.OWNER || member?.permission == MemberPermission.ADMINISTRATOR) {
-                                        result = result ?: true
-                                        temp = true
-                                        break
-                                    }
-                                }
-                            }
+    /**
+     * 单个权限过滤
+     * @param permCode 权限码
+     * @param globalUser 全局用户
+     * @param groupUser 群组用户
+     * @param isGroup 是否是群组
+     * @param messageEvent 消息事件
+     */
+    private fun checkSinglePerm(
+        permCode: String,
+        globalUser: User,
+        groupUser: User?,
+        isGroup: Boolean,
+        messageEvent: MessageEvent
+    ): Boolean {
+        val perm = PermCache.get(permCode) ?: throw RuntimeException("权限 $permCode 未注册")
+        for (group in perm.permGroup) {
+            if (group.users.contains(globalUser)) return true
+            if (isGroup && groupUser != null) {
+                if (group.users.contains(groupUser)) return true
+                for (admin in group.users.filter { it.type == UserType.GROUP_ADMIN }) {
+                    if (admin.groupId == groupUser.groupId && messageEvent is GroupMessageEvent) {
+                        val member = messageEvent.group[admin.userId!!]
+                        if (member?.permission in setOf(MemberPermission.OWNER, MemberPermission.ADMINISTRATOR)) {
+                            return true
                         }
                     }
                 }
             }
-
-            result = when (match) {
-                OR -> if (temp) return true else result == true
-                AND -> result == true && temp
-            }
         }
-
-        return result == true
+        return false
     }
 
     /**
@@ -349,35 +338,29 @@ class MessageFilter(
     ): Boolean {
         if (messageEvent !is GroupMessageEvent) return false
 
-        val user = UserUtil.group(groupId = messageEvent.group.id)
+        val groupUser = UserUtil.group(groupId = messageEvent.group.id)
+        val permCodes = perms.toList()
 
-        var result: Boolean? = null
 
-        for (perm in perms) {
-            val one = HibernateFactory.selectOne(Perm::class.java, "code", perm)
-                ?: throw RuntimeException("权限 $perm 没有注册!")
+        val permsMap = permCodes.associateWith { PermCache.get(it) }
 
-            val permGroup = one.permGroup
-            if (permGroup.isEmpty()) {
-                if (match == AND) return false else continue
-            }
+        val missing = permsMap.filterValues { it == null }.keys
+        if (missing.isNotEmpty()) {
+            warning("以下群权限未注册: ${missing.joinToString()}")
+            return if (match == AND) false else false // OR 模式下，有缺失但可能其他命中
+        }
 
-            var temp = false
-
-            for (group in permGroup) {
-                if (group.users.contains(user)) {
-                    result = result == true
-                    temp = true
-                    break
+        return when (match) {
+            OR -> {
+                permsMap.any { (_, perm) ->
+                    perm?.permGroup?.any { group -> group.users.contains(groupUser) } == true
                 }
             }
-
-            result = when (match) {
-                OR -> if (temp) return true else result == true
-                AND -> result == true && temp
+            AND -> {
+                permsMap.all { (_, perm) ->
+                    perm?.permGroup?.any { group -> group.users.contains(groupUser) } == true
+                }
             }
-
         }
-        return result == true
     }
 }

@@ -1,7 +1,5 @@
 package cn.chahuyun.authorize.exception
 
-import cn.chahuyun.authorize.utils.Log
-
 
 interface ExceptionHandleApi {
 

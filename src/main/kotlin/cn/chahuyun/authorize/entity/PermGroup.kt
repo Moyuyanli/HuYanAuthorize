@@ -56,11 +56,40 @@ data class PermGroup(
     /**
      * 这个权限code是否存在于该权限组
      */
-    fun contains(code: String): Boolean {
+    fun containsPerm(code: String): Boolean {
         for (perm in perms) {
             if (perm.code == code) return true
         }
         return false
+    }
+
+    /**
+     * 添加权限
+     */
+    fun addPerm(perm: Perm): Boolean {
+        perm.code?.let { if (containsPerm(it)) return false }
+        perms.add(perm)
+        return true
+    }
+
+
+    /**
+     * 这个用户是否属于该权限组
+     */
+    fun containsUser(user: Long): Boolean {
+        for (u in users) {
+            if (u.userId == user) return true
+        }
+        return false
+    }
+
+    /**
+     * 添加用户
+     */
+    fun addUser(user: User): Boolean {
+        user.userId?.let { if (containsUser(it)) return false }
+        users.add(user)
+        return true
     }
 
     override fun toString(): String {

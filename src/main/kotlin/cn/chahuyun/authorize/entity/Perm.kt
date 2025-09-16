@@ -1,9 +1,12 @@
 package cn.chahuyun.authorize.entity
 
+import cn.chahuyun.authorize.utils.PermUtil
 import jakarta.persistence.*
 
 /**
  * 权限
+ *
+ * @see PermUtil
  */
 @Entity(name = "auth_perm")
 @Table(name = "auth_perm")
