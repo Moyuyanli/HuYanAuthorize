@@ -9,6 +9,7 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.utils.SilentLogger.debug
 import net.mamoe.mirai.utils.SilentLogger.warning
 import org.reflections.Reflections
 import org.reflections.scanners.Scanners

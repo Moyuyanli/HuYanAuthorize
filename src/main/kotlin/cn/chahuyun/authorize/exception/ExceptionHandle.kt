@@ -1,5 +1,7 @@
 package cn.chahuyun.authorize.exception
 
+import net.mamoe.mirai.utils.SilentLogger.error
+
 
 interface ExceptionHandleApi {
 
@@ -20,7 +22,7 @@ class ExceptionHandle : ExceptionHandleApi {
      */
     override fun handle(e: Throwable) {
         e.cause?.let {
-            Log.error(it.message ?: "壶言鉴权代理方法出错!", it as Exception)
+            error(it.message ?: "壶言鉴权代理方法出错!", it as Exception)
         } ?: e.printStackTrace()
     }
 
