@@ -5,8 +5,8 @@ import cn.chahuyun.authorize.MessageAuthorize
 import cn.chahuyun.authorize.constant.AuthPerm
 import cn.chahuyun.authorize.constant.MessageMatchingEnum
 import cn.chahuyun.authorize.entity.PermGroup
+import cn.chahuyun.authorize.utils.AuthMessageUtil.sendMessageQuote
 import cn.chahuyun.authorize.utils.EventUtil
-import cn.chahuyun.authorize.utils.MessageUtil.sendMessageQuote
 import cn.chahuyun.authorize.utils.PermCache
 import cn.chahuyun.authorize.utils.PermUtil
 import cn.chahuyun.authorize.utils.UserUtil

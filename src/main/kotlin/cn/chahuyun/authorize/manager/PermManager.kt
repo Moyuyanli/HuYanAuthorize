@@ -8,7 +8,7 @@ import cn.chahuyun.authorize.constant.MessageMatchingEnum
 import cn.chahuyun.authorize.entity.Perm
 import cn.chahuyun.authorize.entity.PermGroup
 import cn.chahuyun.authorize.entity.PermGroupTree
-import cn.chahuyun.authorize.utils.MessageUtil.sendMessageQuote
+import cn.chahuyun.authorize.utils.AuthMessageUtil.sendMessageQuote
 import cn.chahuyun.authorize.utils.PermCache
 import cn.chahuyun.authorize.utils.getSystemInfo
 import cn.chahuyun.hibernateplus.HibernateFactory
