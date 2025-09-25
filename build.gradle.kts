@@ -1,5 +1,6 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
+import moe.karla.maven.publishing.MavenPublishingExtension
 import org.jetbrains.dokka.gradle.DokkaTask
 
 plugins {
@@ -63,77 +64,53 @@ val javadocJar by tasks.registering(Jar::class) {
     from(tasks.named<DokkaTask>("dokkaJavadoc"))
 }
 
-//mavenPublishing {
-//    // 设置成手动发布（运行结束后要到 Central 确认发布），如果要自动发布，就用 AUTOMATIC
-//    publishingType = PublishingType.USER_MANAGED
-//    // 改成你自己的信息
-//    url = "https://github.com/用户名/仓库"
-//    developer("用户名", "邮箱")
-//}
+mavenPublishing {
+    // 设置成手动发布（运行结束后要到 Central 确认发布），如果要自动发布，就用 AUTOMATIC
+    publishingType = MavenPublishingExtension.PublishingType.USER_MANAGED
+    // 改成你自己的信息
+    url = "https://github.com/moyuyanli/HuYanAuthorize"
+    developer("moyuyanli", "572490972@qq.com")
+}
+afterEvaluate {
+    publishing {
+        publications.create<MavenPublication>("mavenJava") {
+            // 手动指定主 JAR 文件
+            artifact(tasks.named("buildPlugin"))
+
+            // 添加源码和文档
+            artifact(sourcesJar)
+            artifact(javadocJar)
+
+            groupId = project.group.toString()
+            artifactId = project.name
+            version = project.version.toString()
+        }
+
+        repositories {
+            maven {
+                name = "CentralSnapshots"
+                // kotlin
+                setUrl("https://central.sonatype.com/repository/maven-snapshots/")
+                // 登录仓库
+                credentials {
+                    // 账号密码通过 Generate User Token 获取
+                    // https://central.sonatype.com/account
+                    username = project.findProperty("mavenCentralUsername") as String? ?: ""
+                    password = project.findProperty("mavenCentralPassword") as String? ?: ""
+                }
+            }
+
+            maven {
+                name = "local"
+                url = file("local").toURI()
+            }
+        }
+    }
+
+    signing {
+        useGpgCmd()
+//        sign(publishing.publications["mavenJava"])
+    }
+}
 
 
-// 配置发布
-//afterEvaluate {
-//    publishing {
-//        publications {
-//            create<MavenPublication>("mavenJava") {
-//                from(components["java"])
-//                // 手动指定主 JAR 文件
-//                artifact(tasks.named("buildPlugin"))
-//
-//                // 添加源码和文档
-//                artifact(sourcesJar)
-//                artifact(javadocJar)
-//
-//                // 手动配置 POM 元数据
-//                pom {
-//                    name.set("HuYan Authorize Plugin")
-//                    description.set("Mirai plugin for advanced authorization features")
-//                    url.set("https://github.com/Moyuyanli/HuYanAuthorize")
-//
-//                    licenses {
-//                        license {
-//                            name.set("MIT License")
-//                            url.set("https://opensource.org/licenses/MIT")
-//                        }
-//                    }
-//
-//                    developers {
-//                        developer {
-//                            id.set("moyuyanli")
-//                            name.set("Moyu yanli")
-//                            url.set("https://github.com/Moyuyanli")
-//                        }
-//                    }
-//
-//                    scm {
-//                        connection.set("scm:git:git://github.com/Moyuyanli/HuYanAuthorize.git")
-//                        developerConnection.set("scm:git:ssh://github.com/Moyuyanli/HuYanAuthorize.git")
-//                        url.set("https://github.com/Moyuyanli/HuYanAuthorize")
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-////    nexusPublishing {
-////        repositories {
-////            //旧仓库
-//////            sonatype()
-//////            //自定义仓库，用户和密码是xxxUsername和xxxPassword
-//////            create("central") {
-//////                nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
-//////                snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
-//////            }
-////            sonatype {
-////                nexusUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
-////                snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
-////            }
-////        }
-////    }
-//
-//    signing {
-//        useGpgCmd()
-////        sign(publishing.publications["mavenJava"])
-//    }
-//}
