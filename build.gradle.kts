@@ -21,7 +21,7 @@ plugins {
 }
 
 group = "cn.chahuyun"
-version = "1.2.4"
+version = "1.2.5"
 
 repositories {
     maven("https://nexus.jsdu.cn/repository/maven-public/")
@@ -29,7 +29,7 @@ repositories {
 }
 
 dependencies {
-    implementation("cn.chahuyun:hibernate-plus:1.0.16")
+    implementation("cn.chahuyun:hibernate-plus:1.0.17")
     implementation("cn.hutool:hutool-core:5.8.22")
 }
 
