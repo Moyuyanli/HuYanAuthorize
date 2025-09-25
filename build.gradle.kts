@@ -35,7 +35,7 @@ dependencies {
 
 // hibernate 6 和 HikariCP 5 需要 jdk11
 mirai {
-    jvmTarget = JavaVersion.VERSION_11
+    jvmTarget = JavaVersion.VERSION_17
 }
 
 buildConfig {
