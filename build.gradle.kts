@@ -71,9 +71,11 @@ mavenPublishing {
     url = "https://github.com/moyuyanli/HuYanAuthorize"
     developer("moyuyanli", "572490972@qq.com")
 }
+
 afterEvaluate {
     publishing {
         publications.create<MavenPublication>("mavenJava") {
+            from(components["kotlin"])
             // 手动指定主 JAR 文件
             artifact(tasks.named("buildPlugin"))
 
