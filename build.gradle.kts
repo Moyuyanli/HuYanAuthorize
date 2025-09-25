@@ -16,7 +16,7 @@ plugins {
     signing
     `java-library`
     `maven-publish`
-//    id("moe.karla.maven-publishing") version "1.3.1"
+    id("moe.karla.maven-publishing") version "1.3.1"
 }
 
 group = "cn.chahuyun"
