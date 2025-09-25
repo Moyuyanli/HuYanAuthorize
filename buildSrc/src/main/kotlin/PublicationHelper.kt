@@ -51,8 +51,8 @@ fun mavenPom(artifactId: String): Action<MavenPom> = action {
 
     developers {
         developer {
-            id.set("Moyuyanli") // 你的GitHub用户名或其他ID
-            name.set("Moyuyanli") // 你的真实姓名
+            id.set("moyuyanli") // 你的GitHub用户名或其他ID
+            name.set("moyuyanli") // 你的真实姓名
             email.set("572490972@qq.com") // 你的电子邮件地址
         }
     }
