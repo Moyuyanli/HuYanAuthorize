@@ -65,7 +65,22 @@ interface MessageUtil {
      * @param timeout 超时时间（秒）
      * @param callback 回调函数，收到消息时调用，超时返回null
      */
-    fun nextMessageAsync(senderId: Long, timeout: Int, callback: (MessageEvent?) -> Unit)
+    fun nextMessageEventAsync(senderId: Long, timeout: Int, callback: (MessageEvent?) -> Unit)
+
+    /**
+     * 异步等待指定群组指定用户的下条消息（Java推荐方式）
+     *
+     * @param groupId 群组ID
+     * @param userId 用户ID
+     * @param timeout 超时时间（秒）
+     * @param callback 回调函数，收到消息事件时调用，超时返回null
+     */
+    fun nextUserForGroupMessageEventAsync(
+        groupId: Long,
+        userId: Long,
+        timeout: Int,
+        callback: (GroupMessageEvent?) -> Unit
+    )
 
     // ================ Java开发者专用方法（同步阻塞方式，不推荐在主线程使用） ================
 
@@ -96,7 +111,17 @@ interface MessageUtil {
      * @param timeout 超时时间（秒）
      * @return 收到的消息事件，超时返回null
      */
-    fun nextMessageSync(senderId: Long, timeout: Int): MessageEvent?
+    fun nextMessageEventSync(senderId: Long, timeout: Int): MessageEvent?
+
+    /**
+     * 获取指定群组指定用户的下一条消息（Java推荐方式）
+     *
+     * @param groupId 群组ID
+     * @param userId 用户ID
+     * @param timeout 超时时间（秒）
+     * @return 获取到的消息事件，超时返回null
+     */
+    fun nextUserForGroupMessageEventSync(groupId: Long, userId: Long, timeout: Int): GroupMessageEvent?
 }
 
 /**
@@ -174,13 +199,14 @@ abstract class MessageUtilTemplate : MessageUtil {
      * @param timer 超时时间（秒），默认30秒
      * @return 收到的消息事件，超时返回null
      */
-    suspend fun nextGroupMessageEvent(groupId: Long, timer: Int = 30): GroupMessageEvent? = withTimeoutOrNull(timer * 1000L) {
-        callbackFlow {
-            val once = this@MessageUtilTemplate.channel.filter { it.subject.id == groupId }
-                .subscribeOnce<GroupMessageEvent> { trySend(it) }
-            awaitClose { once.complete() }
-        }.firstOrNull()
-    }
+    suspend fun nextGroupMessageEvent(groupId: Long, timer: Int = 30): GroupMessageEvent? =
+        withTimeoutOrNull(timer * 1000L) {
+            callbackFlow {
+                val once = this@MessageUtilTemplate.channel.filter { it.subject.id == groupId }
+                    .subscribeOnce<GroupMessageEvent> { trySend(it) }
+                awaitClose { once.complete() }
+            }.firstOrNull()
+        }
 
     /**
      * 等待指定用户ID的下一条消息（Kotlin推荐方式）
@@ -196,6 +222,24 @@ abstract class MessageUtilTemplate : MessageUtil {
             awaitClose { once.complete() }
         }.firstOrNull()
     }
+
+    /**
+     * 获取指定群组指定用户的下条消息事件（Kotlin推荐方式）
+     *
+     * @param groupId 群组ID
+     * @param userId 用户ID
+     * @param timer 超时时间（秒），默认30秒
+     * @return 获取到的消息事件，超时返回null
+     */
+    suspend fun nextUserForGroupMessageEvent(groupId: Long, userId: Long, timer: Int = 30): GroupMessageEvent? =
+        withTimeoutOrNull(timer * 1000L) {
+            callbackFlow {
+                val once =
+                    this@MessageUtilTemplate.channel.filter { it.subject.id == groupId && it.sender.id == userId }
+                        .subscribeOnce<GroupMessageEvent> { trySend(it) }
+                awaitClose { once.complete() }
+            }.firstOrNull()
+        }
 
     // ================ Java开发者专用方法（实现接口） ================
     // 这些方法由模板类实现，Java开发者通过接口调用
@@ -233,10 +277,45 @@ abstract class MessageUtilTemplate : MessageUtil {
      * @param timeout 超时时间（秒）
      * @param callback 回调函数，收到消息时调用，超时返回null
      */
-    override fun nextMessageAsync(senderId: Long, timeout: Int, callback: (MessageEvent?) -> Unit) {
+    override fun nextMessageEventAsync(senderId: Long, timeout: Int, callback: (MessageEvent?) -> Unit) {
         CoroutineScope(Dispatchers.Default).launch {
             callback(nextMessage(senderId, timeout))
         }
+    }
+
+    /**
+     * 异步等待指定群组指定用户的下条消息（Java推荐方式）
+     *
+     * @param groupId 群组ID
+     * @param userId 用户ID
+     * @param timeout 超时时间（秒）
+     * @param callback 回调函数，收到消息事件时调用，超时返回null
+     */
+    override fun nextUserForGroupMessageEventAsync(
+        groupId: Long,
+        userId: Long,
+        timeout: Int,
+        callback: (GroupMessageEvent?) -> Unit
+    ) {
+        CoroutineScope(Dispatchers.Default).launch {
+            callback(nextUserForGroupMessageEvent(groupId, userId, timeout))
+        }
+    }
+
+    /**
+     * 获取指定群组指定用户的下一条消息（Java推荐方式）
+     *
+     * @param groupId 群组ID
+     * @param userId 用户ID
+     * @param timeout 超时时间（秒）
+     * @return 获取到的消息事件，超时返回null
+     */
+    override fun nextUserForGroupMessageEventSync(
+        groupId: Long,
+        userId: Long,
+        timeout: Int
+    ): GroupMessageEvent? {
+        return runBlocking { nextUserForGroupMessageEvent(groupId, userId, timeout) }
     }
 
     /**
@@ -268,7 +347,7 @@ abstract class MessageUtilTemplate : MessageUtil {
      * @param timeout 超时时间（秒）
      * @return 收到的消息事件，超时返回null
      */
-    override fun nextMessageSync(senderId: Long, timeout: Int): MessageEvent? {
+    override fun nextMessageEventSync(senderId: Long, timeout: Int): MessageEvent? {
         return runBlocking { nextMessage(senderId, timeout) }
     }
 
@@ -335,7 +414,7 @@ abstract class MessageUtilTemplate : MessageUtil {
     }
 }
 
-object AuthMessageUtil : MessageUtilTemplate(){
+object AuthMessageUtil : MessageUtilTemplate() {
 
     override val channel: EventChannel<MessageEvent> by lazy {
         GlobalEventChannel.parentScope(HuYanAuthorize).filterIsInstance(MessageEvent::class)
