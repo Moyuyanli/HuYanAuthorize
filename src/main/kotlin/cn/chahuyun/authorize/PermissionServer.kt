@@ -1,5 +1,6 @@
 package cn.chahuyun.authorize
 
+import cn.chahuyun.authorize.HuYanAuthorize.log
 import cn.chahuyun.authorize.constant.AuthPerm
 import cn.chahuyun.authorize.entity.Perm
 import cn.chahuyun.authorize.exception.ExceptionHandle
@@ -9,8 +10,6 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.events.MessageEvent
-import net.mamoe.mirai.utils.SilentLogger.debug
-import net.mamoe.mirai.utils.SilentLogger.warning
 import org.reflections.Reflections
 import org.reflections.scanners.Scanners
 import org.reflections.util.ConfigurationBuilder
@@ -118,8 +117,6 @@ object PermissionServer {
      * ```
      *
      *
-     *
-     *
      * @param plugin 注册插件
      * @param perms 权限
      */
@@ -128,7 +125,7 @@ object PermissionServer {
 
         val filter = perms.filter {
             if (list.contains(it.code)) {
-                warning("权限 ${it.code} 是内置关键词，无法注册!")
+                log.warning("权限 ${it.code} 是内置关键词，无法注册!")
                 return@filter false
             } else {
                 return@filter true
@@ -141,9 +138,9 @@ object PermissionServer {
     private fun registerPerm(plugin: JvmPlugin, perms: List<Perm>) {
         perms.forEach { perm ->
             HibernateFactory.selectOne(Perm::class.java, "code", perm.code)?.let {
-                debug("权限 ${it.code} 已注册! 注册插件: ${it.createPlugin}")
+                log.debug("权限 ${it.code} 已注册! 注册插件: ${it.createPlugin}")
             } ?: if (HibernateFactory.merge(perm.setCreatePlugin(plugin.name)).id != 0) {
-                debug("权限 ${perm.code} 注册成功!")
+                log.debug("权限 ${perm.code} 注册成功!")
             } else {
                 error("权限 ${perm.code} 注册失败!")
             }

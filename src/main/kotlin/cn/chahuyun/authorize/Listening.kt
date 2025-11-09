@@ -1,5 +1,6 @@
 package cn.chahuyun.authorize
 
+import cn.chahuyun.authorize.HuYanAuthorize.log
 import cn.chahuyun.authorize.constant.AuthPerm
 import cn.chahuyun.authorize.constant.MessageConversionEnum.*
 import cn.chahuyun.authorize.constant.PermissionMatchingEnum
@@ -8,19 +9,16 @@ import cn.chahuyun.authorize.constant.PermissionMatchingEnum.OR
 import cn.chahuyun.authorize.constant.UserType
 import cn.chahuyun.authorize.entity.User
 import cn.chahuyun.authorize.exception.ExceptionHandleApi
-import cn.chahuyun.authorize.utils.ContinuationUtil
 import cn.chahuyun.authorize.utils.PermCache
 import cn.chahuyun.authorize.utils.PermUtil
 import cn.chahuyun.authorize.utils.UserUtil
 import cn.hutool.core.date.DateUtil
+import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.data.MessageChain.Companion.serializeToJsonString
-import net.mamoe.mirai.utils.SilentLogger.debug
-import net.mamoe.mirai.utils.SilentLogger.error
-import net.mamoe.mirai.utils.SilentLogger.warning
 import java.lang.reflect.Method
 import java.util.*
 import java.util.regex.Pattern
@@ -54,6 +52,7 @@ interface Filter {
 
 
 class MessageFilter(
+    private val plugin: JvmPlugin,
     private val channel: EventChannel<MessageEvent>,
     private val handleApi: ExceptionHandleApi,
     private val prefix: String,
@@ -65,18 +64,19 @@ class MessageFilter(
             channel: EventChannel<MessageEvent>,
             handleApi: ExceptionHandleApi,
             prefix: String,
+            plugin: JvmPlugin
         ) {
-            val register = MessageFilter(channel, handleApi, prefix)
+            val register = MessageFilter(plugin, channel, handleApi, prefix)
 
             for (clazz in classList) {
                 val name = clazz.name
-                debug("已扫描到消息注册类-> $name ")
+                log.debug("已扫描到消息注册类-> $name ")
 
                 var instance: Any
                 try {
                     instance = clazz.getConstructor().newInstance()
-                } catch (e: Exception) {
-                    error("注册类: $name 实例化失败!", e)
+                } catch (e: Throwable) {
+                    log.error("注册类: $name 实例化失败!", e)
                     continue
                 }
 
@@ -105,7 +105,7 @@ class MessageFilter(
                     val methodType = paramsType.asSubclass(MessageEvent::class.java)
                     execute(instance, it, channel.filterIsInstance(methodType), methodType)
                 } else {
-                    warning("类[${instance.javaClass.name}]中方法[${it.name}]的参数类型异常，请检查!")
+                    log.warning("类[${instance.javaClass.name}]中方法[${it.name}]的参数类型异常，请检查!")
                 }
             }
     }
@@ -129,12 +129,12 @@ class MessageFilter(
         val annotation = method.getAnnotation(MessageAuthorize::class.java)
 
 
-        debug("注册消息事件方法-> ${method.name}")
+        log.debug("注册消息事件方法-> ${method.name}")
         channel.exceptionHandler { handleApi.handle(it) }
             .filter {
                 val time = DateUtil.timer()
                 val result = permFilter(it, annotation, methodType) && messageFilter(it, annotation)
-                if (result) debug("${method.name} 匹配用时 ${time.intervalMs()} ms")
+                if (result) log.debug("${method.name} 匹配用时 ${time.intervalMs()} ms")
                 result
             }
             .subscribeAlways<MessageEvent>(
@@ -145,23 +145,20 @@ class MessageFilter(
                     try {
                         val timer = DateUtil.timer()
                         method.invoke(bean, it)
-                        debug("${method.name} 执行用时 ${timer.intervalMs()} ms")
-                    } catch (e: Exception) {
+                        log.debug("${method.name} 执行用时 ${timer.intervalMs()} ms")
+                    } catch (e: Throwable) {
                         handleApi.handle(e)
                     }
                 } else {
                     // 创建 Continuation 实例
-                    val continuation = ContinuationUtil.getContinuation()
                     try {
                         val timer = DateUtil.timer()
                         // 通过反射调用 suspend 函数
-                        method.invoke(bean, it, continuation)
-                        debug("${method.name} 执行用时 ${timer.intervalMs()} ms")
+                        method.invoke(bean, it, plugin)
+                        log.debug("${method.name} 执行用时 ${timer.intervalMs()} ms")
                     } catch (e: Exception) {
                         handleApi.handle(e)
                     }
-                    // 等待协程完成
-                    ContinuationUtil.closeContinuation(continuation)
                 }
             }
     }
@@ -282,6 +279,7 @@ class MessageFilter(
                 }
                 false
             }
+
             AND -> {
                 for (perm in perms) {
                     if (!checkSinglePerm(perm, globalUser, groupUser, isGroup, messageEvent)) {
@@ -314,11 +312,9 @@ class MessageFilter(
             if (isGroup && groupUser != null) {
                 if (group.users.contains(groupUser)) return true
                 for (admin in group.users.filter { it.type == UserType.GROUP_ADMIN }) {
-                    if (admin.groupId == groupUser.groupId && messageEvent is GroupMessageEvent) {
-                        val member = messageEvent.group[admin.userId!!]
-                        if (member?.permission in setOf(MemberPermission.OWNER, MemberPermission.ADMINISTRATOR)) {
-                            return true
-                        }
+                    val groupMessageEvent = messageEvent as GroupMessageEvent
+                    if (admin.groupId == groupMessageEvent.group.id) {
+                        if (groupMessageEvent.sender.permission != MemberPermission.MEMBER) return true
                     }
                 }
             }
@@ -346,7 +342,7 @@ class MessageFilter(
 
         val missing = permsMap.filterValues { it == null }.keys
         if (missing.isNotEmpty()) {
-            warning("以下群权限未注册: ${missing.joinToString()}")
+            log.warning("以下群权限未注册: ${missing.joinToString()}")
             return if (match == AND) false else false // OR 模式下，有缺失但可能其他命中
         }
 
@@ -356,6 +352,7 @@ class MessageFilter(
                     perm?.permGroup?.any { group -> group.users.contains(groupUser) } == true
                 }
             }
+
             AND -> {
                 permsMap.all { (_, perm) ->
                     perm?.permGroup?.any { group -> group.users.contains(groupUser) } == true
