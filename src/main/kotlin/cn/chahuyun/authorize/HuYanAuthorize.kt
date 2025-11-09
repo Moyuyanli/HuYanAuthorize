@@ -5,13 +5,12 @@ import cn.chahuyun.authorize.config.AuthorizeConfig
 import cn.chahuyun.authorize.entity.Perm
 import cn.chahuyun.authorize.entity.PermGroup
 import cn.chahuyun.authorize.entity.User
+import cn.chahuyun.authorize.utils.PermUtil
 import cn.chahuyun.authorize.utils.UserUtil
 import cn.chahuyun.hibernateplus.HibernateFactory
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
-import net.mamoe.mirai.utils.SilentLogger.warning
-
 
 /**
  * @author Moyuyanli
@@ -26,6 +25,8 @@ object HuYanAuthorize : KotlinPlugin(
         info("壶言权限管理")
     }
 ) {
+
+    val log by lazy { logger }
 
     override fun onEnable() {
         // 加载配置
@@ -51,29 +52,20 @@ object HuYanAuthorize : KotlinPlugin(
         val owner = AuthorizeConfig.owner
 
         // 获取 "owner" 权限
-        val selectOne = HibernateFactory.selectOne(Perm::class.java, "code", "owner")
-        val permGroups = selectOne?.permGroup
-
+        val permGroup = PermUtil.talkPermGroupByName("主人")
         if (owner == 123456L) {
 
-            if (permGroups.isNullOrEmpty()) {
-                warning("没有设置主人,请设置主人!")
+            if (permGroup.users.isEmpty()) {
+                log.warning("没有设置主人,请设置主人!")
                 return
             }
 
-            permGroups.forEach {
-                if (it.parentId == null && it.users.isNotEmpty()) {
-                    AuthorizeConfig.owner = it.users.first().userId!!
-                }
+            permGroup.users.forEach {
+                AuthorizeConfig.owner = it.userId!!
             }
         } else {
-            permGroups?.first { it.parentId == null && it.name == "主人" }?.let {
-                if (!it.containsUser(owner)) {
-                    it.addUser(UserUtil.globalUser(owner))
-                    it.save()
-                }
-            } ?: run {
-                addOwnerPermGroup(selectOne, UserUtil.globalUser(owner))
+            if (permGroup.users.none { it.userId == owner }) {
+                permGroup.addUser(UserUtil.globalUser(owner))
             }
         }
 

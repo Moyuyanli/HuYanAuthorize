@@ -1,6 +1,6 @@
 package cn.chahuyun.authorize.exception
 
-import net.mamoe.mirai.utils.SilentLogger.error
+import cn.chahuyun.authorize.HuYanAuthorize.log
 
 
 interface ExceptionHandleApi {
@@ -21,9 +21,9 @@ class ExceptionHandle : ExceptionHandleApi {
      * 处理异常
      */
     override fun handle(e: Throwable) {
-        e.cause?.let {
-            error(it.message ?: "壶言鉴权代理方法出错!", it as Exception)
-        } ?: e.printStackTrace()
+        val message = e.cause?.message ?: e.message ?: "壶言鉴权:代理方法发生异常"
+        val throwable = e.cause ?: e
+        log.error(message, throwable)
     }
 
 }

@@ -1,11 +1,11 @@
 package cn.chahuyun.authorize.utils
 
+import cn.chahuyun.authorize.HuYanAuthorize.log
 import cn.chahuyun.authorize.constant.AuthPerm
 import cn.chahuyun.authorize.entity.Perm
 import cn.chahuyun.authorize.entity.PermGroup
 import cn.chahuyun.authorize.entity.User
 import cn.chahuyun.hibernateplus.HibernateFactory
-import net.mamoe.mirai.utils.SilentLogger.debug
 import java.util.concurrent.ConcurrentHashMap
 
 
@@ -54,7 +54,7 @@ object PermUtil {
     fun checkUserHasPerm(user: User, code: String): Boolean {
         val selectOne = HibernateFactory.selectOne(Perm::class.java, "code", code)
         if (selectOne == null) {
-            debug("权限不存在!")
+            log.debug("权限不存在!")
             return false
         }
         selectOne.permGroup.forEach {
@@ -158,7 +158,7 @@ object PermCache {
         for (perm in perms) {
             cache[perm.code!!] = perm
         }
-        debug("权限缓存已加载，共 ${perms.size} 项")
+        log.debug("权限缓存已加载，共 ${perms.size} 项")
     }
 
     // 可选：提供手动刷新接口

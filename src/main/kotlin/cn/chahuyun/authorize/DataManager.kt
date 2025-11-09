@@ -2,6 +2,7 @@ package cn.chahuyun.authorize
 
 
 
+import cn.chahuyun.authorize.HuYanAuthorize.log
 import cn.chahuyun.authorize.config.AuthorizeConfig.dataType
 import cn.chahuyun.authorize.config.AuthorizeConfig.mysqlPassword
 import cn.chahuyun.authorize.config.AuthorizeConfig.mysqlUrl
@@ -9,7 +10,6 @@ import cn.chahuyun.authorize.config.AuthorizeConfig.mysqlUser
 import cn.chahuyun.hibernateplus.DriveType.*
 import cn.chahuyun.hibernateplus.HibernatePlusService
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
-import net.mamoe.mirai.utils.SilentLogger.info
 
 
 class DataManager {
@@ -34,7 +34,7 @@ class DataManager {
             }
 
             HibernatePlusService.loadingService(configuration)
-            info("HuYanAuthorize DateBase loaded success fully !")
+            log.info("HuYanAuthorize DateBase loaded success fully !")
         }
     }
 
