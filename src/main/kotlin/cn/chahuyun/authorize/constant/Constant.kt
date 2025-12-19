@@ -129,6 +129,6 @@ object LogTopic {
     /**
      * topic
      */
-    const val topic = "HuYanAuthorize"
+    const val TOPIC = "HuYanAuthorize"
 
 }
