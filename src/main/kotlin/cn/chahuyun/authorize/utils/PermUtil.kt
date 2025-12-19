@@ -52,15 +52,14 @@ object PermUtil {
      * @return true 有权限
      */
     fun checkUserHasPerm(user: User, code: String): Boolean {
-        val selectOne = HibernateFactory.selectOne(Perm::class.java, "code", code)
-        if (selectOne == null) {
-            log.debug("权限不存在!")
+        val perm = PermCache.get(code)
+        if (perm == null) {
+            log.debug("权限码 $code 未注册!")
             return false
         }
-        selectOne.permGroup.forEach {
-            if (it.users.contains(user)) return true
+        return perm.permGroup.any { group ->
+            group.users.contains(user)
         }
-        return false
     }
 
     /**
@@ -76,6 +75,7 @@ object PermUtil {
 
         selectOne.users.add(user)
         HibernateFactory.merge(selectOne)
+        PermCache.refresh() // 用户变更，刷新缓存以确保鉴权准确
 
         return true
     }
@@ -86,6 +86,7 @@ object PermUtil {
     fun addPermToPermGroupByPermGroup(perm: Perm, permGroup: PermGroup): Boolean {
         permGroup.perms.add(perm)
         HibernateFactory.merge(permGroup)
+        PermCache.refresh() // 权限组变更，刷新缓存
         return true
     }
 
@@ -96,6 +97,7 @@ object PermUtil {
         val group = talkPermGroupByName(name)
         group.perms.add(perm)
         HibernateFactory.merge(group)
+        PermCache.refresh() // 权限组变更，刷新缓存
         return true
     }
 
@@ -112,6 +114,7 @@ object PermUtil {
 
         selectOne.users.remove(user)
         HibernateFactory.merge(selectOne)
+        PermCache.refresh() // 用户变更，刷新缓存
 
         return true
     }
