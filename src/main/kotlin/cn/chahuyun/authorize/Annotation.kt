@@ -1,8 +1,8 @@
 package cn.chahuyun.authorize
 
+import cn.chahuyun.authorize.constant.AuthPerm
 import cn.chahuyun.authorize.constant.MessageConversionEnum
 import cn.chahuyun.authorize.constant.MessageMatchingEnum
-import cn.chahuyun.authorize.constant.AuthPerm
 import cn.chahuyun.authorize.constant.PermissionMatchingEnum
 import cn.chahuyun.authorize.match.CustomPattern
 import net.mamoe.mirai.event.ConcurrencyKind
