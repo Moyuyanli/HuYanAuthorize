@@ -59,7 +59,7 @@ publishing {
 }
 
 signing {
-    // useGpgCmd()
-    // sign(publishing.publications["mavenJava"])
+    useGpgCmd()
+    sign(publishing.publications["mavenJava"])
 }
 

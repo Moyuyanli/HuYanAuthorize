@@ -124,10 +124,22 @@ afterEvaluate {
 
     signing {
         // 如果本地安装了 GPG，可以使用 gpg 命令签名
-        // useGpgCmd()
+         useGpgCmd()
         // 如果没有 GPG 环境，先注释掉 sign 任务，手动上传时在 Nexus 后台可能可以处理，
         // 但通常 Central 要求上传前必须签名。建议本地安装 GPG 并配置。
-        // sign(publishing.publications["mavenJava"])
+//         sign(publishing.publications["mavenJava"])
+
+
+//        // 从项目属性中获取PGP签名配置信息
+//        val signingKey = project.findProperty("signing.secretKey") as String?
+//        val signingPassword = project.findProperty("signing.password") as String?
+//        val signingKeyId = project.findProperty("signing.keyId") as String?
+//
+//        // 使用获取到的密钥信息配置内存中的PGP签名环境
+//        useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+
+        // 对Maven Java发布进行数字签名
+        sign(publishing.publications["mavenJava"])
     }
 }
 
