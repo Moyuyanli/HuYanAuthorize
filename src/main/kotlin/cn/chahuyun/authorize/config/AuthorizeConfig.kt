@@ -16,8 +16,11 @@ object AuthorizeConfig : AutoSavePluginConfig("AuthorizeConfig") {
     @ValueDescription("主人\n")
     var owner: Long by value(123456L)
 
+    @ValueDescription("是否启用 KSP 编译期代码生成监听器(建议开启,需要下游开发者自行配置 KSP)")
+    var useKsp: Boolean by value(true)
+
     @ValueDescription("数据库类型(H2,SQLITE,MYSQL)")
-    var dataType: DriveType  by value(DriveType.H2)
+    var dataType: DriveType by value(DriveType.H2)
 
     @ValueDescription("mysql数据库连接地址")
     val mysqlUrl: String by value("127.0.0.1:3306/authorize")
