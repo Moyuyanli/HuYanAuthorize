@@ -2,12 +2,10 @@ package cn.chahuyun.authorize
 
 import cn.chahuyun.authorize.command.AuthorizeCommand
 import cn.chahuyun.authorize.config.AuthorizeConfig
+import cn.chahuyun.authorize.constant.AuthPerm
 import cn.chahuyun.authorize.entity.Perm
-import cn.chahuyun.authorize.entity.PermGroup
-import cn.chahuyun.authorize.entity.User
 import cn.chahuyun.authorize.utils.PermUtil
 import cn.chahuyun.authorize.utils.UserUtil
-import cn.chahuyun.hibernateplus.HibernateFactory
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
@@ -36,9 +34,13 @@ object HuYanAuthorize : KotlinPlugin(
         // 初始化插件数据库
         DataManager.init(this)
         // 注册本插件的权限
-        PermissionServer.authorizePermRegister()
+        AuthorizeServer.registerPermissions(
+            this,
+            Perm(AuthPerm.OWNER, "主人权限"),
+            Perm(AuthPerm.ADMIN, "管理员权限")
+        )
         // 添加本插件的注册消息
-        PermissionServer.registerMessageEvent(this, "cn.chahuyun.authorize.manager")
+        AuthorizeServer.registerEvents(this, "cn.chahuyun.authorize.manager")
         // 尝试同步主人
         syncOwner()
         logger.info("HuYanAuthorize plugin loaded!")
@@ -48,39 +50,30 @@ object HuYanAuthorize : KotlinPlugin(
         logger.info("HuYanAuthorize plugin uninstalled!")
     }
 
+    /**
+     * 同步主人信息
+     * 确保配置文件和数据库中的“主人”权限组一致
+     */
     private fun syncOwner() {
-        val owner = AuthorizeConfig.owner
-
-        // 获取 "owner" 权限
+        val configOwner = AuthorizeConfig.owner
         val permGroup = PermUtil.talkPermGroupByName("主人")
-        if (owner == 123456L) {
 
-            if (permGroup.users.isEmpty()) {
-                log.warning("没有设置主人,请设置主人!")
-                return
-            }
-
-            permGroup.users.forEach {
-                AuthorizeConfig.owner = it.userId!!
+        if (configOwner == 123456L) {
+            // 如果配置是默认值，尝试从数据库权限组中找回主人
+            val firstOwner = permGroup.users.firstOrNull()?.userId
+            if (firstOwner != null) {
+                AuthorizeConfig.owner = firstOwner
+                log.info("从数据库同步主人信息: $firstOwner")
+            } else {
+                log.warning("当前未设置主人（默认 123456），请尽快设置主人权限！")
             }
         } else {
-            if (permGroup.users.none { it.userId == owner }) {
-                permGroup.addUser(UserUtil.globalUser(owner))
+            // 如果配置已经指定了主人，确保他在权限组里
+            val globalUser = UserUtil.globalUser(configOwner)
+            if (permGroup.users.none { it.userId == configOwner }) {
+                permGroup.addUser(globalUser)
+                log.info("已将配置文件中的主人 $configOwner 同步至权限组")
             }
-        }
-
-    }
-
-    private fun addOwnerPermGroup(perm: Perm, owner: User) {
-        // 创建权限组
-        val ownerPermGroup = PermGroup(
-            name = "主人",
-            perms = mutableSetOf(perm),
-            users = mutableSetOf(owner)
-        )
-
-        if (HibernateFactory.merge(ownerPermGroup).id != 0) {
-            logger.info("主人 $owner 已同步!")
         }
     }
 
