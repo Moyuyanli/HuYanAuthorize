@@ -41,7 +41,7 @@ object UserUtil {
             Pair("type", UserType.GROUP_ADMIN),
             Pair("groupId", groupId)
         )
-        return HibernateFactory.selectOne(User::class.java, map) ?:  User(type = UserType.GROUP_ADMIN, groupId = groupId)
+        return HibernateFactory.selectOne(User::class.java, map) ?: User(type = UserType.GROUP_ADMIN, groupId = groupId)
     }
 
     /**
@@ -55,6 +55,10 @@ object UserUtil {
             Pair("groupId", groupId),
             Pair("userId", userId)
         )
-        return   HibernateFactory.selectOne(User::class.java, map) ?:  User(type = UserType.GROUP_MEMBER, groupId = groupId, userId = userId)
+        return HibernateFactory.selectOne(User::class.java, map) ?: User(
+            type = UserType.GROUP_MEMBER,
+            groupId = groupId,
+            userId = userId
+        )
     }
 }
