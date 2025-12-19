@@ -3,7 +3,7 @@ package cn.chahuyun.authorize.match
 import net.mamoe.mirai.event.Event
 
 
-class SimpleCustomImpl:CustomPattern {
+class SimpleCustomImpl : CustomPattern {
 
     /**
      * 一个自定义匹配规则
