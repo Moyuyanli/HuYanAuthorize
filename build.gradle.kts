@@ -1,6 +1,5 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
-import moe.karla.maven.publishing.MavenPublishingExtension
 import org.jetbrains.dokka.gradle.DokkaTask
 
 plugins {
@@ -17,25 +16,58 @@ plugins {
     signing
     `java-library`
     `maven-publish`
-    id("moe.karla.maven-publishing") version "1.3.1"
 }
 
 group = "cn.chahuyun"
-version = "1.2.7"
+version = "1.3.0"
 
-repositories {
-    maven("https://nexus.jsdu.cn/repository/maven-public/")
-    mavenCentral()
+// 提取公共 POM 配置
+fun MavenPom.setupCommonMetadata() {
+    name.set(project.name)
+    description.set("一个用于针对简化mirai插件开发的前置插件")
+    url.set("https://github.com/moyuyanli/HuYanAuthorize")
+    licenses {
+        license {
+            name.set("Apache-2.0 License")
+            url.set("https://www.apache.org/licenses/LICENSE-2.0")
+        }
+    }
+    developers {
+        developer {
+            id.set("moyuyanli")
+            name.set("moyuyanli")
+            email.set("572490972@qq.com")
+        }
+    }
+    scm {
+        connection.set("scm:git:github.com/moyuyanli/HuYanAuthorize.git")
+        developerConnection.set("scm:git:ssh://github.com/moyuyanli/HuYanAuthorize.git")
+        url.set("https://github.com/moyuyanli/HuYanAuthorize")
+    }
 }
 
 dependencies {
+    compileOnly("top.mrxiaom.mirai:overflow-core-api:1.0.8")
+
     implementation("cn.chahuyun:hibernate-plus:1.0.17")
-    implementation("cn.hutool:hutool-core:5.8.22")
+
+    testImplementation(platform("org.junit:junit-bom:5.9.1"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 // hibernate 6 和 HikariCP 5 需要 jdk11
 mirai {
     jvmTarget = JavaVersion.VERSION_17
+}
+
+java {
+    // 移除这里，改用下方手动定义的任务以保持对旧版 Mirai 插件结构的兼容
+    // withSourcesJar()
+    // withJavadocJar()
 }
 
 buildConfig {
@@ -64,44 +96,25 @@ val javadocJar by tasks.registering(Jar::class) {
     from(tasks.named<DokkaTask>("dokkaJavadoc"))
 }
 
-mavenPublishing {
-    // 设置成手动发布（运行结束后要到 Central 确认发布），如果要自动发布，就用 AUTOMATIC
-    publishingType = MavenPublishingExtension.PublishingType.USER_MANAGED
-    // 改成你自己的信息
-    url = "https://github.com/moyuyanli/HuYanAuthorize"
-    developer("moyuyanli", "572490972@qq.com")
-}
-
 afterEvaluate {
     publishing {
         publications.create<MavenPublication>("mavenJava") {
-            from(components["kotlin"])
-            // 手动指定主 JAR 文件
+            // mirai-console 插件的核心构建任务
             artifact(tasks.named("buildPlugin"))
 
-            // 添加源码和文档
             artifact(sourcesJar)
             artifact(javadocJar)
 
             groupId = project.group.toString()
             artifactId = project.name
             version = project.version.toString()
+
+            pom {
+                setupCommonMetadata()
+            }
         }
 
         repositories {
-            maven {
-                name = "CentralSnapshots"
-                // kotlin
-                setUrl("https://central.sonatype.com/repository/maven-snapshots/")
-                // 登录仓库
-                credentials {
-                    // 账号密码通过 Generate User Token 获取
-                    // https://central.sonatype.com/account
-                    username = project.findProperty("mavenCentralUsername") as String? ?: ""
-                    password = project.findProperty("mavenCentralPassword") as String? ?: ""
-                }
-            }
-
             maven {
                 name = "local"
                 url = file("local").toURI()
@@ -110,8 +123,11 @@ afterEvaluate {
     }
 
     signing {
-        useGpgCmd()
-//        sign(publishing.publications["mavenJava"])
+        // 如果本地安装了 GPG，可以使用 gpg 命令签名
+        // useGpgCmd()
+        // 如果没有 GPG 环境，先注释掉 sign 任务，手动上传时在 Nexus 后台可能可以处理，
+        // 但通常 Central 要求上传前必须签名。建议本地安装 GPG 并配置。
+        // sign(publishing.publications["mavenJava"])
     }
 }
 
