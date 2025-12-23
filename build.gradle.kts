@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "cn.chahuyun"
-version = "1.3.0"
+version = "1.3.1"
 
 // 提取公共 POM 配置
 fun MavenPom.setupCommonMetadata() {
@@ -49,7 +49,7 @@ fun MavenPom.setupCommonMetadata() {
 dependencies {
     compileOnly("top.mrxiaom.mirai:overflow-core-api:1.0.8")
 
-    implementation("cn.chahuyun:hibernate-plus:1.0.17")
+    implementation("cn.chahuyun:hibernate-plus:2.0.1")
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -61,7 +61,7 @@ tasks.test {
 
 // hibernate 6 和 HikariCP 5 需要 jdk11
 mirai {
-    jvmTarget = JavaVersion.VERSION_17
+    jvmTarget = JavaVersion.VERSION_11
 }
 
 java {
