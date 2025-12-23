@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package cn.chahuyun.authorize.command
 
 import cn.chahuyun.authorize.HuYanAuthorize
