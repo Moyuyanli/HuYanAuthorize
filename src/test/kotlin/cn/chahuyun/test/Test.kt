@@ -10,7 +10,7 @@ import java.util.*
 
 fun test() {
 
-    var code = Perm(
+    var code: Perm = Perm(
         code = "admin",
         description = "管理员",
         createPlugin = "HuYanAuthorize"
@@ -31,13 +31,14 @@ fun test() {
     println("user -> $mergeUser")
 
 
-    code = HibernateFactory.selectOne(Perm::class.java, 1)
+    code = HibernateFactory.selectOne(Perm::class.java, 1) ?: error("错误")
 
     val permGroup1 = PermGroup(
         name = "默认",
-        perms = mutableSetOf(code),
         users = mutableSetOf(mergeUser)
-    )
+    ).apply {
+        code.let { perms.add(it) }
+    }
 
     val group = HibernateFactory.merge(permGroup1)
 
@@ -55,14 +56,17 @@ fun test() {
 
     val permGroup2 = PermGroup(
         name = "默认",
-        perms = mutableSetOf(code),
         users = mutableSetOf(user1)
-    )
+    ).apply {
+        code.let { perms.add(it) }
+    }
 
     val group1 = HibernateFactory.merge(permGroup2)
 
-    val selectOne1 = HibernateFactory.selectOne(PermGroup::class.java, group.id)
-    val selectOne2 = HibernateFactory.selectOne(PermGroup::class.java, group1.id)
+    val id1 = group.id ?: error("错误")
+    val selectOne1 = HibernateFactory.selectOne(PermGroup::class.java, id1)
+    val id2 = group1.id ?: error("错误")
+    val selectOne2 = HibernateFactory.selectOne(PermGroup::class.java, id2)
     println("select one1 -> $selectOne1")
     println("select one2 -> $selectOne2")
 
