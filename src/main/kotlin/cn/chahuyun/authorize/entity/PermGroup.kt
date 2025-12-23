@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package cn.chahuyun.authorize.entity
 
 import cn.chahuyun.hibernateplus.HibernateFactory
@@ -20,12 +22,12 @@ data class PermGroup(
     /**
      * 父id
      */
-    var parentId: Int? = null,
+    var parentId: Int= -1,
     /**
      * 分组名称
      */
     @Column(unique = true)
-    var name: String? = null,
+    var name: String  = "默认分组",
     /**
      * 权限列表
      */
@@ -48,7 +50,7 @@ data class PermGroup(
     var users: MutableSet<User> = mutableSetOf(),
 ) {
 
-    constructor(name: String, parentId: Int? = null) : this() {
+    constructor(name: String, parentId: Int = -1) : this() {
         this.name = name
         this.parentId = parentId
     }
@@ -117,6 +119,8 @@ data class PermGroupTree(
 ) {
 
     companion object {
+
+        @JvmStatic
         fun fromPermGroup(permGroup: PermGroup): PermGroupTree {
             return PermGroupTree(
                 id = permGroup.id,
