@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package cn.chahuyun.authorize.constant
 
 
