@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package cn.chahuyun.authorize.ksp
 
 import com.google.devtools.ksp.processing.*
