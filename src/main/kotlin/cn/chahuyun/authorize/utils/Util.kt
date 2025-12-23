@@ -1,43 +1,11 @@
 package cn.chahuyun.authorize.utils
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.message.data.At
 import java.lang.management.ManagementFactory
 import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.CoroutineContext
-
-object ContinuationUtil {
-
-    /**
-     * 创建一个新协程
-     */
-    fun getContinuation(): Continuation<Unit> {
-        return object : Continuation<Unit> {
-            private val job = Job()
-            override val context: CoroutineContext
-                get() = Dispatchers.Default + job
-
-            override fun resumeWith(result: Result<Unit>) {
-                if (result.isFailure) {
-                    result.exceptionOrNull()?.printStackTrace()
-                } else {
-                    println("Continuation resumed.")
-                }
-                job.complete()
-            }
-        }
-    }
-
-    suspend fun closeContinuation(continuation: Continuation<Unit>) {
-        continuation.context[Job]?.join()
-    }
-
-}
 
 
 object EventUtil {
