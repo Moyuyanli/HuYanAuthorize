@@ -61,14 +61,8 @@ class PermCommandManager {
                     sendMessageQuote(event, "父权限组 $parentName 不存在!\n")
                     return
                 }
-                if (permGroup.parentId != null) {
-                    val currentParent = HibernateFactory.selectOne(PermGroup::class.java, permGroup.parentId)
-                    builder.append("已有父权限组 ${currentParent.name}, 添加父权限组失败!\n")
-                } else {
-                    permGroup.parentId = parent.id
-                    permGroup.perms.addAll(parent.perms)
-                    builder.append("继承父权限组 $parentName 权限!\n")
-                }
+                val currentParent = HibernateFactory.selectOne(PermGroup::class.java, permGroup.parentId)
+                builder.append(currentParent?.let { "已有父权限组 ${it.name}, 添加父权限组失败!\n" })
             } else {
                 if (!AuthorizeServer.isPermissionRegistered(s)) {
                     builder.append("权限 $s 未注册, 添加失败!\n")
@@ -148,7 +142,7 @@ class PermCommandManager {
                 sendMessageQuote(event, "权限组 ${split[1]} 不存在")
                 return
             }
-            val list = HibernateFactory.selectList(PermGroup::class.java, "parentId", one.parentId)
+            val list = HibernateFactory.selectList(PermGroup::class.java, "parentId", one.parentId).toMutableList()
             list.add(one)
             list
         } else {
