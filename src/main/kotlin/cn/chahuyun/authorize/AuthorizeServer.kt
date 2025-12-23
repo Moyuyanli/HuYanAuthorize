@@ -59,25 +59,24 @@ object AuthorizeServer {
      * @param perms 权限信息
      */
     fun registerPermissions(plugin: JvmPlugin, vararg perms: Perm) {
-        val reservedCodes = listOf(AuthPerm.NULL, AuthPerm.ADMIN, AuthPerm.OWNER)
-
         val validPerms = perms.filter {
-            if (reservedCodes.contains(it.code)) {
+            if (listOf(AuthPerm.NULL, AuthPerm.ADMIN, AuthPerm.OWNER).contains(it.code)) {
                 HuYanAuthorize.log.warning("权限码 ${it.code} 是内置关键词，无法手动注册")
                 false
             } else true
         }
 
         validPerms.forEach { perm ->
-            val existing = HibernateFactory.selectOne(Perm::class.java, "code", perm.code)
+            val code = perm.code ?: error("权限code为空!")
+            val existing = HibernateFactory.selectOne(Perm::class.java, "code", code)
             if (existing != null) {
-                HuYanAuthorize.log.debug("权限码 ${perm.code} 已由插件 ${existing.createPlugin} 注册")
+                HuYanAuthorize.log.debug("权限码 $code 已由插件 ${existing.createPlugin} 注册")
             } else {
                 perm.setCreatePlugin(plugin.name)
                 if (HibernateFactory.merge(perm).id != 0) {
-                    HuYanAuthorize.log.debug("权限码 ${perm.code} 注册成功")
+                    HuYanAuthorize.log.debug("权限码 $code 注册成功")
                 } else {
-                    HuYanAuthorize.log.error("权限码 ${perm.code} 注册失败")
+                    HuYanAuthorize.log.error("权限码 $code 注册失败")
                 }
             }
         }
