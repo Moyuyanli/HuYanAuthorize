@@ -31,6 +31,14 @@ class DataManager {
 
                 H2 -> configuration.address = HuYanAuthorize.dataFolderPath.resolve("authorize.h2.mv.db").toString()
                 SQLITE -> configuration.address = HuYanAuthorize.dataFolderPath.resolve("authorize.mv.db").toString()
+                HSQLDB -> configuration.address = HuYanAuthorize.dataFolderPath.resolve("authorize.hsqldb").toString()
+                MARIADB -> {
+                    configuration.address = mysqlUrl
+                    configuration.user = mysqlUser
+                    configuration.password = mysqlPassword
+                }
+
+                DUCKDB -> configuration.address = HuYanAuthorize.dataFolderPath.resolve("authorize.duckdb").toString()
             }
 
             HibernatePlusService.loadingService(configuration)
