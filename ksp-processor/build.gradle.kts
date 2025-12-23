@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "cn.chahuyun"
-version = "1.3.0"
+version = project.rootProject.version
 
 java {
     withSourcesJar()
