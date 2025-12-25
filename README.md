@@ -132,6 +132,30 @@ class MyListener {
 
 ---
 
+## IntelliJ IDEA 插件支持 (开发计划)
+
+为了提供最佳的开发体验，我们计划推出配套的 IntelliJ IDEA 插件。目前该插件仍在路线图中，尚未正式发布。
+
+### 核心功能 (规划中)
+*   **[未实现] 消除未使用警告**: 自动识别 `@MessageAuthorize` 标记的方法为程序入口点，不再提示 "Method is never used"。
+*   **[未实现] 权限码自动补全**: 在注解中输入权限码时，提供智能提示。
+*   **[未实现] 正则校验**: 在编写 `@MessageAuthorize` 正则规则时，实时进行语法检查。
+*   **[未实现] 侧边栏导航 (Gutter Icons)**: 在监听方法侧边显示图标，点击可快速跳转或查看配置。
+
+### 临时解决方案 (针对 "Unused" 警告)
+在配套插件发布前，下游开发者可以通过以下方式手动消除 IDEA 的未使用方法警告：
+
+1.  **手动添加入口点 (Entry Point)**:
+    *   打开 IDEA 设置: `Editor` -> `Inspections`。
+    *   找到 `JVM languages` -> `Unused declaration`。
+    *   在右侧点击 `Entry Points` 标签页 -> `Annotations...`。
+    *   点击 `+` 号并输入: `cn.chahuyun.authorize.MessageAuthorize`。
+2.  **项目级共享 (推荐)**:
+    *   在 IDEA 中将检查配置文件 (Inspection Profile) 的 `Scheme` 改为 `Project`。
+    *   将 `.idea/inspectionProfiles/Project_Default.xml` 提交到 Git 仓库，这样所有下游开发者克隆项目后都将自动获得该配置。
+
+---
+
 ## 权限管理常用指令
 
 | 指令                   | 作用            | 示例                   |
