@@ -11,10 +11,7 @@ object UserUtil {
      * @see UserType.GLOBAL_USER
      */
     fun globalUser(userId: Long): User {
-        val map = mutableMapOf<String, Any?>(
-            Pair("type", UserType.GLOBAL_USER),
-            Pair("userId", userId)
-        )
+        val map = mapOf("type" to UserType.GLOBAL_USER, "userId" to userId)
         return HibernateFactory.selectOne(User::class.java, map) ?: User(type = UserType.GLOBAL_USER, userId = userId)
     }
 
@@ -24,10 +21,7 @@ object UserUtil {
      * @see UserType.GROUP
      */
     fun group(groupId: Long): User {
-        val map = mutableMapOf<String, Any?>(
-            Pair("type", UserType.GROUP),
-            Pair("groupId", groupId)
-        )
+        val map = mapOf("type" to UserType.GROUP, "groupId" to groupId)
         return HibernateFactory.selectOne(User::class.java, map) ?: User(type = UserType.GROUP, groupId = groupId)
     }
 
@@ -37,10 +31,7 @@ object UserUtil {
      * @see UserType.GROUP_ADMIN
      */
     fun groupAdmin(groupId: Long): User {
-        val map = mutableMapOf<String, Any?>(
-            Pair("type", UserType.GROUP_ADMIN),
-            Pair("groupId", groupId)
-        )
+        val map = mapOf("type" to UserType.GROUP_ADMIN, "groupId" to groupId)
         return HibernateFactory.selectOne(User::class.java, map) ?: User(type = UserType.GROUP_ADMIN, groupId = groupId)
     }
 
@@ -50,10 +41,10 @@ object UserUtil {
      * @see UserType.GROUP_MEMBER
      */
     fun member(groupId: Long, userId: Long): User {
-        val map = mutableMapOf<String, Any?>(
-            Pair("type", UserType.GROUP_MEMBER),
-            Pair("groupId", groupId),
-            Pair("userId", userId)
+        val map = mapOf(
+            "type" to UserType.GROUP_MEMBER,
+            "groupId" to groupId,
+            "userId" to userId
         )
         return HibernateFactory.selectOne(User::class.java, map) ?: User(
             type = UserType.GROUP_MEMBER,

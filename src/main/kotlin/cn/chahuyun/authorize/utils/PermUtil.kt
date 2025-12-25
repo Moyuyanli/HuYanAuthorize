@@ -21,7 +21,7 @@ object PermUtil {
      * 根据id查询权限组
      */
     fun selectPermGroupOneById(id: Long): PermGroup? {
-        return HibernateFactory.selectOne(PermGroup::class.java, id)
+        return HibernateFactory.selectOneById(id)
     }
 
     /**
@@ -34,7 +34,7 @@ object PermUtil {
     /**
      * 取一个权限组，如果不存在则新建
      */
-    fun talkPermGroupByName(name: String): PermGroup {
+    fun takePermGroupByName(name: String): PermGroup {
         return HibernateFactory.selectOne(PermGroup::class.java, "name", name)
             ?: HibernateFactory.merge(PermGroup(name))
     }
@@ -94,7 +94,7 @@ object PermUtil {
      * 将这个权限添加到对应的权限组
      */
     fun addPermToPermGroupByName(perm: Perm, name: String): Boolean {
-        val group = talkPermGroupByName(name)
+        val group = takePermGroupByName(name)
         group.perms.add(perm)
         HibernateFactory.merge(group)
         PermCache.refresh() // 权限组变更，刷新缓存
