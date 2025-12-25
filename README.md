@@ -12,7 +12,7 @@
 *   **权限分组与继承**: 权限通过分组管理，支持组间继承。
 *   **灵活的消息匹配**: 支持文本、正则、以及自定义逻辑匹配。
 *   **指令前缀支持**: 全局或局部配置指令触发前缀。
-*   **轻量化**: 移除外部依赖 (如 Hutool)，减少插件体积。
+*   **轻量化**: 移除外部依赖，减少插件体积。
 
 ---
 
@@ -44,10 +44,10 @@ plugins {
 
 dependencies {
     // 核心库
-    compileOnly("cn.chahuyun:HuYanAuthorize:1.2.7")
+    compileOnly("cn.chahuyun:HuYanAuthorize:1.3.2")
     
     // 启用 KSP 编译期加速 (可选，需要同时引入上面的 ksp 插件)
-    ksp("cn.chahuyun:huyan-authorize-ksp:1.2.7")
+    ksp("cn.chahuyun:HuYanAuthorize-ksp:1.3.2")
 }
 ```
 
@@ -119,24 +119,24 @@ class MyListener {
 
 ## 消息鉴权注解 API (@MessageAuthorize)
 
-| 属性 | 类型 | 说明 |
-| :--- | :--- | :--- |
-| `text` | `Array<String>` | 匹配文本。正则模式下取第一条。 |
-| `messageMatching` | `Enum` | 匹配方式：`TEXT`(默认), `REGULAR`, `CUSTOM`。 |
-| `messageConversion` | `Enum` | 转换方式：`MIRAI_CODE`(默认), `CONTENT`, `JSON`。 |
-| `userPermissions` | `Array<String>` | 用户需拥有的权限码。 |
-| `groupPermissions` | `Array<String>` | 群需拥有的权限码。 |
-| `userInGroupPermissionsAssociation` | `Enum` | 用户与群权限的关联逻辑：`AND`(默认), `OR`。 |
-| `priority` | `EventPriority` | 监听优先级。 |
-| `concurrency` | `ConcurrencyKind` | 并发处理方式。 |
+| 属性                                  | 类型                | 说明                                        |
+|:------------------------------------|:------------------|:------------------------------------------|
+| `text`                              | `Array<String>`   | 匹配文本。正则模式下取第一条。                           |
+| `messageMatching`                   | `Enum`            | 匹配方式：`TEXT`(默认), `REGULAR`, `CUSTOM`。     |
+| `messageConversion`                 | `Enum`            | 转换方式：`MIRAI_CODE`(默认), `CONTENT`, `JSON`。 |
+| `userPermissions`                   | `Array<String>`   | 用户需拥有的权限码。                                |
+| `groupPermissions`                  | `Array<String>`   | 群需拥有的权限码。                                 |
+| `userInGroupPermissionsAssociation` | `Enum`            | 用户与群权限的关联逻辑：`AND`(默认), `OR`。              |
+| `priority`                          | `EventPriority`   | 监听优先级。                                    |
+| `concurrency`                       | `ConcurrencyKind` | 并发处理方式。                                   |
 
 ---
 
 ## 权限管理常用指令
 
-| 指令 | 作用 | 示例 |
-| :--- | :--- | :--- |
-| `+perm (组名) [code]` | 创建/修改权限组并添加权限 | `+perm 管理组 admin` |
-| `+global (@用户) (组名)` | 将用户加入全局权限组 | `+global 123456 管理组` |
-| `+member (@用户) (组名)` | 将群成员加入权限组 | `+member @小明 成员组` |
-| `=perm [组名]` | 查询权限组信息 | `=perm` |
+| 指令                   | 作用            | 示例                   |
+|:---------------------|:--------------|:---------------------|
+| `+perm (组名) [code]`  | 创建/修改权限组并添加权限 | `+perm 管理组 admin`    |
+| `+global (@用户) (组名)` | 将用户加入全局权限组    | `+global 123456 管理组` |
+| `+member (@用户) (组名)` | 将群成员加入权限组     | `+member @小明 成员组`    |
+| `=perm [组名]`         | 查询权限组信息       | `=perm`              |
