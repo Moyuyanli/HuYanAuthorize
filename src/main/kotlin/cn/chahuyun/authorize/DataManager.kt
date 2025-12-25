@@ -11,10 +11,20 @@ import cn.chahuyun.hibernateplus.HibernatePlusService
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 
 
+/**
+ * 数据管理器类，负责数据库的初始化和配置
+ */
 class DataManager {
 
-
+    /**
+     * 伴生对象，包含数据管理器的初始化方法
+     */
     companion object {
+        /**
+         * 初始化数据管理器，配置并加载数据库服务
+         *
+         * @param plugin Kotlin插件实例，用于获取类加载器和配置信息
+         */
         fun init(plugin: KotlinPlugin) {
             val configuration = HibernatePlusService.createConfiguration(plugin::class.java)
 
@@ -41,10 +51,10 @@ class DataManager {
                 DUCKDB -> configuration.address = HuYanAuthorize.dataFolderPath.resolve("authorize.duckdb").toString()
             }
 
+            // 加载Hibernate Plus服务
             HibernatePlusService.loadingService(configuration)
             log.info("HuYanAuthorize DateBase loaded success fully !")
         }
     }
-
 
 }

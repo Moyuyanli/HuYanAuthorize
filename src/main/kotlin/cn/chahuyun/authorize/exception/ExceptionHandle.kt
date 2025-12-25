@@ -3,14 +3,21 @@ package cn.chahuyun.authorize.exception
 import cn.chahuyun.authorize.HuYanAuthorize.log
 
 
+/**
+ * 异常处理API接口
+ * 定义了处理异常的统一接口规范
+ */
 interface ExceptionHandleApi {
 
     /**
      * 处理异常
+     *
+     * @param e 需要被处理的异常对象，类型为Throwable
      */
     fun handle(e: Throwable)
 
 }
+
 
 /**
  * 默认异常处理

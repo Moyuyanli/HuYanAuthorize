@@ -23,9 +23,16 @@ import net.mamoe.mirai.message.data.MessageChainBuilder
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.QuoteReply
 
+/**
+ * 权限命令管理器，用于处理权限组管理和用户权限分配相关的命令
+ */
 @EventComponent
 class PermCommandManager {
 
+    /**
+     * 测试命令，用于验证权限系统是否正常工作
+     * @param event 消息事件对象
+     */
     @MessageAuthorize(
         text = ["进行测试"],
         userPermissions = [AuthPerm.OWNER, AuthPerm.ADMIN]
@@ -36,6 +43,10 @@ class PermCommandManager {
 
     // ================= 权限组管理 =================
 
+    /**
+     * 添加或更新权限组命令，支持添加权限和设置父权限组
+     * @param event 消息事件对象
+     */
     @MessageAuthorize(
         text = ["\\+perm \\S+( %?\\S+)*"],
         messageMatching = MessageMatchingEnum.REGULAR,
@@ -85,6 +96,10 @@ class PermCommandManager {
         event.subject.sendMessage(builder.build())
     }
 
+    /**
+     * 删除权限组或从权限组中删除权限命令
+     * @param event 消息事件对象
+     */
     @MessageAuthorize(
         text = ["-perm \\S+( %?\\S+)*"],
         messageMatching = MessageMatchingEnum.REGULAR,
@@ -130,6 +145,10 @@ class PermCommandManager {
         event.subject.sendMessage(builder.build())
     }
 
+    /**
+     * 查看权限组信息命令，支持查看所有权限组或指定权限组
+     * @param event 消息事件对象
+     */
     @MessageAuthorize(
         text = ["=perm( \\S+)?"],
         messageMatching = MessageMatchingEnum.REGULAR,
@@ -157,6 +176,10 @@ class PermCommandManager {
 
     // ================= 用户管理 =================
 
+    /**
+     * 为全局用户添加权限组命令
+     * @param event 消息事件对象
+     */
     @MessageAuthorize(
         text = ["\\+global (\\[mirai:at:)?\\d+]? \\S+"],
         messageMatching = MessageMatchingEnum.REGULAR,
@@ -166,6 +189,10 @@ class PermCommandManager {
         handleUserOp(event, true) { userId, _ -> UserUtil.globalUser(userId) }
     }
 
+    /**
+     * 为群组添加权限组命令
+     * @param event 群消息事件对象
+     */
     @MessageAuthorize(
         text = ["\\+group \\S+"],
         messageMatching = MessageMatchingEnum.REGULAR,
@@ -175,6 +202,10 @@ class PermCommandManager {
         handleUserOp(event, true) { _, e -> UserUtil.group((e as GroupMessageEvent).group.id) }
     }
 
+    /**
+     * 为群管理员添加权限组命令
+     * @param event 群消息事件对象
+     */
     @MessageAuthorize(
         text = ["\\+admin \\S+"],
         messageMatching = MessageMatchingEnum.REGULAR,
@@ -184,6 +215,10 @@ class PermCommandManager {
         handleUserOp(event, true) { _, e -> UserUtil.groupAdmin((e as GroupMessageEvent).group.id) }
     }
 
+    /**
+     * 为群成员添加权限组命令
+     * @param event 群消息事件对象
+     */
     @MessageAuthorize(
         text = ["\\+member (\\[mirai:at:)?\\d+]? \\S+"],
         messageMatching = MessageMatchingEnum.REGULAR,
@@ -193,6 +228,10 @@ class PermCommandManager {
         handleUserOp(event, true) { userId, e -> UserUtil.member((e as GroupMessageEvent).group.id, userId) }
     }
 
+    /**
+     * 从全局用户中移除权限组命令
+     * @param event 消息事件对象
+     */
     @MessageAuthorize(
         text = ["-global (\\[mirai:at:)?\\d+]? \\S+"],
         messageMatching = MessageMatchingEnum.REGULAR,
@@ -202,6 +241,10 @@ class PermCommandManager {
         handleUserOp(event, false) { userId, _ -> UserUtil.globalUser(userId) }
     }
 
+    /**
+     * 从群组中移除权限组命令
+     * @param event 群消息事件对象
+     */
     @MessageAuthorize(
         text = ["-group \\S+"],
         messageMatching = MessageMatchingEnum.REGULAR,
@@ -211,6 +254,10 @@ class PermCommandManager {
         handleUserOp(event, false) { _, e -> UserUtil.group((e as GroupMessageEvent).group.id) }
     }
 
+    /**
+     * 从群管理员中移除权限组命令
+     * @param event 群消息事件对象
+     */
     @MessageAuthorize(
         text = ["-admin \\S+"],
         messageMatching = MessageMatchingEnum.REGULAR,
@@ -220,6 +267,10 @@ class PermCommandManager {
         handleUserOp(event, false) { _, e -> UserUtil.groupAdmin((e as GroupMessageEvent).group.id) }
     }
 
+    /**
+     * 从群成员中移除权限组命令
+     * @param event 群消息事件对象
+     */
     @MessageAuthorize(
         text = ["-member (\\[mirai:at:)?\\d+]? \\S+"],
         messageMatching = MessageMatchingEnum.REGULAR,
@@ -231,6 +282,12 @@ class PermCommandManager {
 
     // ================= 辅助方法 =================
 
+    /**
+     * 处理用户权限组操作的通用方法
+     * @param event 消息事件对象
+     * @param isAdd 是否为添加操作，true为添加，false为删除
+     * @param userProvider 用户提供者函数，用于获取用户对象
+     */
     private suspend fun handleUserOp(
         event: MessageEvent,
         isAdd: Boolean,
@@ -273,11 +330,19 @@ class PermCommandManager {
         sendMessageQuote(event, result)
     }
 
+    /**
+     * 保存权限组并刷新缓存
+     * @param group 要保存的权限组对象
+     */
     private fun saveAndRefresh(group: PermGroup) {
         HibernateFactory.merge(group)
         PermCache.refresh()
     }
 
+    /**
+     * 更新子权限组的权限，将父权限组的权限同步给子权限组
+     * @param parent 父权限组对象
+     */
     private fun updateChildren(parent: PermGroup) {
         val children = HibernateFactory.selectList(PermGroup::class.java, "parentId", parent.id)
         for (child in children) {
@@ -286,6 +351,11 @@ class PermCommandManager {
         }
     }
 
+    /**
+     * 构建权限组树结构
+     * @param permGroups 权限组列表
+     * @return 权限组树结构集合
+     */
     private fun buildPermGroupTree(permGroups: List<PermGroup>): Set<PermGroupTree> {
         val groupMutableMap = permGroups.associateBy({ it.id!! }, { PermGroupTree.fromPermGroup(it) })
         val result = mutableSetOf<PermGroupTree>()
@@ -299,6 +369,13 @@ class PermCommandManager {
         return result
     }
 
+    /**
+     * 递归添加权限组树节点到转发消息构建器中
+     * @param builder 转发消息构建器
+     * @param bot 机器人对象
+     * @param subject 联系人对象
+     * @param treeSet 权限组树集合
+     */
     private fun appendChildNodes(
         builder: ForwardMessageBuilder,
         bot: Bot,
