@@ -22,7 +22,7 @@ data class PermGroup(
     /**
      * 父id
      */
-    var parentId: Int= -1,
+    var parentId: Int? = null,
     /**
      * 分组名称
      */
@@ -50,7 +50,7 @@ data class PermGroup(
     var users: MutableSet<User> = mutableSetOf(),
 ) {
 
-    constructor(name: String, parentId: Int = -1) : this() {
+    constructor(name: String, parentId: Int? = null) : this() {
         this.name = name
         this.parentId = parentId
     }
