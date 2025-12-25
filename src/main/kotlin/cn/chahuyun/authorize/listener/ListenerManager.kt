@@ -31,7 +31,7 @@ object ListenerManager {
             try {
                 val loader = ServiceLoader.load(GeneratedListenerRegistrar::class.java)
                 for (registrar in loader) {
-                    log.info("检测到编译期生成的监听注册器: ${registrar.javaClass.simpleName}")
+                    log.debug("检测到编译期生成的监听注册器: ${registrar.javaClass.simpleName}")
                     registrar.register(channel, filter, handleApi, plugin)
                     kspSuccess = true
                 }
