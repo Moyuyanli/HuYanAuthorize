@@ -72,7 +72,7 @@ class PermCommandManager {
                     sendMessageQuote(event, "父权限组 $parentName 不存在!\n")
                     return
                 }
-                val currentParent = HibernateFactory.selectOne(PermGroup::class.java, permGroup.parentId)
+                val currentParent = permGroup.parentId?.let { HibernateFactory.selectOneById<PermGroup>(it) }
                 builder.append(currentParent?.let { "已有父权限组 ${it.name}, 添加父权限组失败!\n" })
             } else {
                 if (!AuthorizeServer.isPermissionRegistered(s)) {
