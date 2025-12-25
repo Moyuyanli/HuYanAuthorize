@@ -66,18 +66,31 @@ object AuthorizeServer {
             } else true
         }
 
-        validPerms.forEach { perm ->
-            val code = perm.code ?: error("权限code为空!")
-            val existing = HibernateFactory.selectOne(Perm::class.java, "code", code)
-            if (existing != null) {
-                HuYanAuthorize.log.debug("权限码 $code 已由插件 ${existing.createPlugin} 注册")
+        validPerms.forEach { registerSinglePermission(plugin, it) }
+    }
+
+    /**
+     * 内部注册权限码通道
+     * 仅供核心插件使用
+     */
+    internal fun registerPermissionsInternal(plugin: JvmPlugin, vararg perms: Perm) {
+        perms.forEach { registerSinglePermission(plugin, it) }
+    }
+
+    /**
+     * 注册单个权限
+     */
+    private fun registerSinglePermission(plugin: JvmPlugin, perm: Perm) {
+        val code = perm.code ?: error("权限code为空!")
+        val existing = HibernateFactory.selectOne(Perm::class.java, "code", code)
+        if (existing != null) {
+            HuYanAuthorize.log.debug("权限码 $code 已由插件 ${existing.createPlugin} 注册")
+        } else {
+            perm.setCreatePlugin(plugin.name)
+            if (HibernateFactory.merge(perm).id != 0) {
+                HuYanAuthorize.log.debug("权限码 $code 注册成功")
             } else {
-                perm.setCreatePlugin(plugin.name)
-                if (HibernateFactory.merge(perm).id != 0) {
-                    HuYanAuthorize.log.debug("权限码 $code 注册成功")
-                } else {
-                    HuYanAuthorize.log.error("权限码 $code 注册失败")
-                }
+                HuYanAuthorize.log.error("权限码 $code 注册失败")
             }
         }
     }
