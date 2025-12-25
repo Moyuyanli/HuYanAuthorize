@@ -31,7 +31,7 @@ fun test() {
     println("user -> $mergeUser")
 
 
-    code = HibernateFactory.selectOne(Perm::class.java, 1) ?: error("错误")
+    code = HibernateFactory.selectOneById(Perm::class.java, 1) ?: error("错误")
 
     val permGroup1 = PermGroup(
         name = "默认",
@@ -64,15 +64,15 @@ fun test() {
     val group1 = HibernateFactory.merge(permGroup2)
 
     val id1 = group.id ?: error("错误")
-    val selectOne1 = HibernateFactory.selectOne(PermGroup::class.java, id1)
+    val selectOne1 = HibernateFactory.selectOneById(PermGroup::class.java, id1)
     val id2 = group1.id ?: error("错误")
-    val selectOne2 = HibernateFactory.selectOne(PermGroup::class.java, id2)
+    val selectOne2 = HibernateFactory.selectOneById(PermGroup::class.java, id2)
     println("select one1 -> $selectOne1")
     println("select one2 -> $selectOne2")
 
 
-    val one1 = HibernateFactory.selectOne(User::class.java, 1)
-    val one2 = HibernateFactory.selectOne(User::class.java, 2)
+    val one1 = HibernateFactory.selectOneById(User::class.java, 1)
+    val one2 = HibernateFactory.selectOneById(User::class.java, 2)
     println("one1 -> $one1")
     println("one2 -> $one2")
 
