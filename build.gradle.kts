@@ -16,10 +16,23 @@ plugins {
     signing
     `java-library`
     `maven-publish`
+
+    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
 }
 
 group = "cn.chahuyun"
-version = "1.3.2"
+version = "1.3.3"
+
+dependencies {
+    compileOnly("top.mrxiaom.mirai:overflow-core-api:1.0.8")
+
+    ksp("cn.chahuyun:HuYanAuthorize-ksp:1.3.2")
+
+    implementation("cn.chahuyun:hibernate-plus:2.1.0")
+
+    testImplementation(platform("org.junit:junit-bom:5.9.1"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+}
 
 // 提取公共 POM 配置
 fun MavenPom.setupCommonMetadata() {
@@ -46,15 +59,6 @@ fun MavenPom.setupCommonMetadata() {
     }
 }
 
-dependencies {
-    compileOnly("top.mrxiaom.mirai:overflow-core-api:1.0.8")
-
-    implementation("cn.chahuyun:hibernate-plus:2.0.1")
-
-    testImplementation(platform("org.junit:junit-bom:5.9.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-}
-
 tasks.test {
     useJUnitPlatform()
 }
@@ -62,12 +66,6 @@ tasks.test {
 // hibernate 6 和 HikariCP 5 需要 jdk11
 mirai {
     jvmTarget = JavaVersion.VERSION_11
-}
-
-java {
-    // 移除这里，改用下方手动定义的任务以保持对旧版 Mirai 插件结构的兼容
-    // withSourcesJar()
-    // withJavadocJar()
 }
 
 buildConfig {
