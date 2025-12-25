@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "cn.chahuyun"
-version = "1.3.1"
+version = "1.3.2"
 
 // 提取公共 POM 配置
 fun MavenPom.setupCommonMetadata() {

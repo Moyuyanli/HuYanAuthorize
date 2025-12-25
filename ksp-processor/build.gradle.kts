@@ -23,7 +23,7 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
-            artifactId = "huyan-authorize-ksp"
+            artifactId = "HuYanAuthorize-ksp"
             
             pom {
                 name.set("HuYanAuthorize KSP Processor")
