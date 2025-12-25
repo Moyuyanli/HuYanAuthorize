@@ -34,7 +34,7 @@ object HuYanAuthorize : KotlinPlugin(
         // 初始化插件数据库
         DataManager.init(this)
         // 注册本插件的权限
-        AuthorizeServer.registerPermissions(
+        AuthorizeServer.registerPermissionsInternal(
             this,
             Perm(AuthPerm.OWNER, "主人权限"),
             Perm(AuthPerm.ADMIN, "管理员权限")
@@ -56,7 +56,7 @@ object HuYanAuthorize : KotlinPlugin(
      */
     private fun syncOwner() {
         val configOwner = AuthorizeConfig.owner
-        val permGroup = PermUtil.talkPermGroupByName("主人")
+        val permGroup = PermUtil.takePermGroupByName("主人")
 
         if (configOwner == 123456L) {
             // 如果配置是默认值，尝试从数据库权限组中找回主人
