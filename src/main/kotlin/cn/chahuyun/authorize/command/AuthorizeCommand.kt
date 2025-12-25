@@ -30,7 +30,7 @@ object AuthorizeCommand : CompositeCommand(
     @Description("设置主人")
     suspend fun CommandSender.setOwner(owner: Long) {
         AuthorizeConfig.owner = owner
-        val permGroup = PermUtil.talkPermGroupByName("主人")
+        val permGroup = PermUtil.takePermGroupByName("主人")
         permGroup.users.clear()
         val ownerUser = UserUtil.globalUser(owner)
         permGroup.users.add(ownerUser)
