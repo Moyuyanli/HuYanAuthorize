@@ -1,0 +1,51 @@
+[versions]
+# Kotlin 版本（统一所有模块；同时影响 KSP 插件版本匹配）
+kotlin = "1.9.20"
+# KSP 版本（需与 Kotlin 版本匹配，例如 Kotlin 1.9.20 -> 1.9.20-1.0.14）
+ksp = "1.9.20-1.0.14"
+# Mirai 版本（core-api、mirai-console 插件等相关依赖的对齐基准）
+mirai = "2.16.0"
+# Dokka 版本（生成文档用）
+dokka = "1.8.10"
+# BuildConfig 插件版本（生成 BuildConstants）
+buildconfig = "3.1.0"
+# hibernate-plus 版本（数据库访问封装）
+hibernatePlus = "2.1.0"
+# overflow-core-api 版本（可选：与 overflow-core 生态适配）
+overflowCoreApi = "1.0.8"
+# JUnit BOM 版本（测试依赖对齐）
+junitBom = "5.9.1"
+# KotlinPoet 版本（KSP 生成代码使用）
+kotlinpoet = "1.14.2"
+
+[libraries]
+# Mirai Core API（仅需 compileOnly：用于引用 EventPriority/ConcurrencyKind 等类型）
+mirai-core-api = { module = "net.mamoe:mirai-core-api", version.ref = "mirai" }
+# overflow-core-api（核心插件 compileOnly）
+overflow-core-api = { module = "top.mrxiaom.mirai:overflow-core-api", version.ref = "overflowCoreApi" }
+# hibernate-plus（运行时依赖）
+hibernate-plus = { module = "cn.chahuyun:hibernate-plus", version.ref = "hibernatePlus" }
+
+# JUnit（测试）
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junitBom" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+
+# KSP 处理器编译期依赖
+ksp-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
+kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
+kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version.ref = "kotlinpoet" }
+
+[plugins]
+# Kotlin 插件（根项目统一声明版本，子模块通过 alias 引用，不写 version）
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+# KSP 插件（根项目统一声明版本）
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+# mirai-console Gradle 插件（构建 mirai2 插件用）
+mirai-console = { id = "net.mamoe.mirai-console", version = "2.16.0" }
+# Dokka 插件
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+# BuildConfig 插件
+buildconfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildconfig" }
+
+
