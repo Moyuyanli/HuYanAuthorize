@@ -1,4 +1,4 @@
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DSL_SCOPE_VIOLATION")
 
 import org.jetbrains.dokka.gradle.DokkaTask
 
