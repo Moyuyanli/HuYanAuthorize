@@ -13,6 +13,9 @@ import java.util.*
  */
 object ListenerManager {
 
+    private const val REGISTRAR_INDEX_FQCN =
+        "cn.chahuyun.authorize.listener.GeneratedListenerRegistrarIndex"
+
     fun register(
         classList: Set<Class<*>>,
         channel: EventChannel<MessageEvent>,
@@ -29,10 +32,16 @@ object ListenerManager {
         var kspSuccess = false
         if (useKsp) {
             // 使用当前插件 classLoader 加载 providers，避免跨插件误加载
-            val loader = ServiceLoader.load(GeneratedListenerRegistrar::class.java, plugin.javaClass.classLoader)
+            val pluginCl = plugin.javaClass.classLoader
+            val loader = ServiceLoader.load(GeneratedListenerRegistrar::class.java, pluginCl)
             var foundAny = false
             val seen = HashSet<String>()
             for (registrar in loader) {
+                // ServiceLoader 可能会从依赖插件的 classloader 中解析到 provider。
+                // 强制 KSP 时只允许使用“当前插件”自身 classloader 中的 registrar，避免误注册依赖插件的监听器导致行为异常。
+                if (registrar.javaClass.classLoader !== pluginCl) {
+                    continue
+                }
                 foundAny = true
                 val registrarName = registrar.javaClass.name
                 if (!seen.add(registrarName)) {
@@ -47,6 +56,38 @@ object ListenerManager {
                 } catch (e: Throwable) {
                     // 不回退到反射（否则可能造成重复注册）；保留日志以便定位生成器/注册器错误
                     log.error("KSP 注册器 ${registrar.javaClass.name} 执行失败：${e.message}", e)
+                }
+            }
+
+            // 兼容：如果打包方式丢失了 META-INF/services，ServiceLoader 会找不到 provider。
+            // 此时尝试从 KSP 生成的索引类中读取 registrar 列表（索引是 class，一般不会被打包丢失）。
+            if (!foundAny) {
+                try {
+                    val indexClass = Class.forName(REGISTRAR_INDEX_FQCN, false, pluginCl)
+                    @Suppress("UNCHECKED_CAST")
+                    val names: Array<String> = runCatching {
+                        indexClass.getDeclaredField("REGISTRARS").get(null) as Array<String>
+                    }.getOrElse {
+                        indexClass.getDeclaredMethod("registrarClassNames").invoke(null) as Array<String>
+                    }
+
+                    for (name in names) {
+                        val clazz = Class.forName(name, true, pluginCl)
+                        if (clazz.classLoader !== pluginCl) continue
+                        val registrar = clazz.getDeclaredConstructor().newInstance() as GeneratedListenerRegistrar
+                        val registrarName = registrar.javaClass.name
+                        if (!seen.add(registrarName)) continue
+                        foundAny = true
+                        kspSuccess = true
+                        try {
+                            log.debug("通过索引发现编译期生成的监听注册器: ${registrar.javaClass.simpleName}")
+                            registrar.register(channel, filter, handleApi, plugin)
+                        } catch (e: Throwable) {
+                            log.error("KSP 注册器 ${registrar.javaClass.name} 执行失败：${e.message}", e)
+                        }
+                    }
+                } catch (_: Throwable) {
+                    // ignore
                 }
             }
 
