@@ -8,6 +8,9 @@ import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.events.MessageEvent
 import java.lang.reflect.Method
 import java.util.*
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
+import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 
 /**
  * 反射实现的监听注册器
@@ -80,22 +83,55 @@ class ReflectionListenerRegistrar(private val classList: Set<Class<*>>) : Listen
                 concurrency = annotation.concurrency,
                 priority = annotation.priority
             ) {
-                if (method.parameterCount == 1) {
-                    try {
-                        val start = System.currentTimeMillis()
-                        method.invoke(bean, it)
-                        log.debug("${method.name} 执行用时 ${System.currentTimeMillis() - start} ms")
-                    } catch (e: Throwable) {
-                        handleApi.handle(e)
+                try {
+                    // 仅对 test 方法打印入口来源，用于排查“双回复/重复订阅”
+                    if (method.name == "test") {
+                        val beanCl = bean.javaClass.classLoader
+                        val methodCl = method.declaringClass.classLoader
+                        val eventCl = it::class.java.classLoader
+                        log.debug(
+                            "ENTRY[test][REFLECTION] bean=${bean.javaClass.name}@${System.identityHashCode(bean)} " +
+                                "method=${method.toGenericString()}@${System.identityHashCode(method)} " +
+                                "beanCL=${beanCl?.javaClass?.name}@${System.identityHashCode(beanCl)} " +
+                                "methodCL=${methodCl?.javaClass?.name}@${System.identityHashCode(methodCl)} " +
+                                "eventCL=${eventCl?.javaClass?.name}@${System.identityHashCode(eventCl)} " +
+                                "eventType=${it::class.java.name} sender=${it.sender.id} subject=${it.subject.id}"
+                        )
                     }
-                } else {
-                    try {
-                        val start = System.currentTimeMillis()
-                        method.invoke(bean, it, plugin)
-                        log.debug("${method.name} 执行用时 ${System.currentTimeMillis() - start} ms")
-                    } catch (e: Exception) {
-                        handleApi.handle(e)
+
+                    val start = System.currentTimeMillis()
+
+                    val paramTypes = method.parameterTypes
+                    val isSuspend = paramTypes.isNotEmpty() && Continuation::class.java.isAssignableFrom(paramTypes.last())
+
+                    if (!isSuspend) {
+                        // 普通方法：fun onEvent(event) / fun onEvent(event, plugin)
+                        if (method.parameterCount == 1) {
+                            method.invoke(bean, it)
+                        } else {
+                            method.invoke(bean, it, plugin)
+                        }
+                    } else {
+                        // suspend 方法：编译为 (event, [plugin], Continuation) -> Any?
+                        val argCountWithoutContinuation = paramTypes.size - 1
+                        val args: Array<Any?> = when (argCountWithoutContinuation) {
+                            1 -> arrayOf(it)
+                            2 -> arrayOf(it, plugin)
+                            else -> throw IllegalStateException(
+                                "不支持的方法签名: ${method.declaringClass.name}.${method.name} 参数数量=${paramTypes.size} (含 Continuation)"
+                            )
+                        }
+
+                        // 在协程上下文中，把当前 continuation 传给编译后的 suspend 方法
+                        suspendCoroutineUninterceptedOrReturn<Any?> { cont ->
+                            val result = method.invoke(bean, *args, cont)
+                            if (result === COROUTINE_SUSPENDED) COROUTINE_SUSPENDED else result
+                        }
                     }
+
+                    log.debug("${method.name} 执行用时 ${System.currentTimeMillis() - start} ms")
+                } catch (e: Throwable) {
+                    handleApi.handle(e)
                 }
             }
     }
