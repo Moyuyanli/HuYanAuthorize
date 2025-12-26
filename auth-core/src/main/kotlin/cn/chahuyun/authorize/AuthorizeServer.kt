@@ -33,7 +33,8 @@ object AuthorizeServer {
         plugin: JvmPlugin,
         packageName: String,
         exceptionHandle: ExceptionHandleApi = ExceptionHandle(),
-        prefix: String = ""
+        prefix: String = "",
+        useKsp: Boolean = false
     ) {
         val eventChannel = GlobalEventChannel
         val classes = scanPackage(plugin.javaClass.classLoader, packageName)
@@ -48,7 +49,8 @@ object AuthorizeServer {
             eventChannel.filterIsInstance(MessageEvent::class),
             exceptionHandle,
             prefix,
-            plugin
+            plugin,
+            forceKsp = useKsp
         )
     }
 

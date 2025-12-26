@@ -40,7 +40,7 @@ object HuYanAuthorize : KotlinPlugin(
             Perm(AuthPerm.ADMIN, "管理员权限")
         )
         // 添加本插件的注册消息
-        AuthorizeServer.registerEvents(this, "cn.chahuyun.authorize.manager")
+        AuthorizeServer.registerEvents(this, "cn.chahuyun.authorize.manager", useKsp = true)
         // 尝试同步主人
         syncOwner()
         logger.info("HuYanAuthorize plugin loaded!")

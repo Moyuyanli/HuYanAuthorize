@@ -4,18 +4,20 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         maven("https://nexus.chahuyun.cn/repository/maven-public/")
-        google()        // 必须包含这个
-        mavenCentral()  // 必须包含这个
+        google()
+        mavenCentral()
     }
 }
 pluginManagement{
     repositories{
         maven("https://nexus.chahuyun.cn/repository/maven-public/")
-        google()        // 必须包含这个
-        mavenCentral()  // 必须包含这个
+        google()
+        mavenCentral()
     }
 }
 
 rootProject.name = "HuYanAuthorize"
 
-include("ksp-processor")
+include("auth-api")
+include("auth-core")
+include("auth-ksp")
