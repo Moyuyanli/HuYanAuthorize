@@ -71,6 +71,55 @@ class AuthorizeProcessor(
         } catch (e: Exception) {
             // 文件可能已存在
         }
+
+        // 兼容：部分打包方式可能丢失 generated resources（META-INF/services），导致 ServiceLoader 找不到 provider。
+        // 为保证“只要 registrar 类能编译进产物，就一定能被发现”，额外生成一个纯 class 的索引对象。
+        // 运行时可在 ServiceLoader 为空时回退读取该索引。
+        try {
+            val indexPackage = "cn.chahuyun.authorize.listener"
+            val indexName = "GeneratedListenerRegistrarIndex"
+
+            val registrarsArrayInit = CodeBlock.builder()
+                .add("arrayOf(\n")
+                .apply {
+                    generatedRegistrars.forEachIndexed { idx, name ->
+                        add("    %S", name)
+                        if (idx != generatedRegistrars.size - 1) add(",")
+                        add("\n")
+                    }
+                }
+                .add(")")
+                .build()
+
+            val fileSpec = FileSpec.builder(indexPackage, indexName)
+                .addType(
+                    TypeSpec.objectBuilder(indexName)
+                        .addKdoc(
+                            "KSP 生成：监听注册器索引。\n\n" +
+                                "当 META-INF/services 在打包过程中丢失时，运行时可通过该索引回退发现 registrar。\n" +
+                                "请勿手动修改。\n"
+                        )
+                        .addProperty(
+                            PropertySpec.builder("REGISTRARS", ARRAY.parameterizedBy(STRING))
+                                .addAnnotation(JvmField::class)
+                                .initializer(registrarsArrayInit)
+                                .build()
+                        )
+                        .addFunction(
+                            FunSpec.builder("registrarClassNames")
+                                .addAnnotation(JvmStatic::class)
+                                .returns(ARRAY.parameterizedBy(STRING))
+                                .addStatement("return REGISTRARS")
+                                .build()
+                        )
+                        .build()
+                )
+                .build()
+
+            fileSpec.writeTo(codeGenerator, true)
+        } catch (e: Exception) {
+            logger.warn("生成 GeneratedListenerRegistrarIndex 失败：${e.message}")
+        }
     }
 
     /**
