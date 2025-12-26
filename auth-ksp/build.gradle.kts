@@ -26,7 +26,7 @@ java {
 }
 
 dependencies {
-    // 注意：处理器本身不需要依赖 auth-api（否则发布到 Maven 时 POM 会携带该依赖，导致下游拉取失败）
+    // 注意：处理器本身不应该依赖 core 工程模块（否则发布到 Maven 时 POM 会携带该依赖，导致下游拉取失败）
     implementation(libs.ksp.api)
     implementation(libs.kotlinpoet)
     implementation(libs.kotlinpoet.ksp)
