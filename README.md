@@ -44,10 +44,10 @@ plugins {
 
 dependencies {
     // 核心库（下游只需要依赖 HuYanAuthorize 即可使用 AuthorizeServer/PermUtil/注解等所有能力）
-    compileOnly("cn.chahuyun:HuYanAuthorize:1.3.4")
+    compileOnly("cn.chahuyun:HuYanAuthorize:1.3.5")
     
     // 启用 KSP 编译期加速 (可选，需要同时引入上面的 ksp 插件)
-    ksp("cn.chahuyun:HuYanAuthorize-ksp:1.3.4")
+    ksp("cn.chahuyun:HuYanAuthorize-ksp:1.3.5")
 }
 ```
 
