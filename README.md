@@ -38,16 +38,16 @@ dependencyResolutionManagement {
 
 ```kotlin
 plugins {
-    // 引入 KSP 插件 (版本需与 Kotlin 版本匹配，如 Kotlin 1.9.20 对应 1.9.20-1.0.14)
+    // 启用 KSP（可选；版本需与 Kotlin 版本匹配）
     id("com.google.devtools.ksp") version "1.9.20-1.0.14"
 }
 
 dependencies {
-    // 核心库
-    compileOnly("cn.chahuyun:HuYanAuthorize:1.3.2")
+    // 核心库（下游只需要依赖 HuYanAuthorize 即可使用 AuthorizeServer/PermUtil/注解等所有能力）
+    compileOnly("cn.chahuyun:HuYanAuthorize:1.3.4")
     
     // 启用 KSP 编译期加速 (可选，需要同时引入上面的 ksp 插件)
-    ksp("cn.chahuyun:HuYanAuthorize-ksp:1.3.2")
+    ksp("cn.chahuyun:HuYanAuthorize-ksp:1.3.4")
 }
 ```
 
@@ -58,7 +58,9 @@ dependencies {
 ```kotlin
 override fun onEnable() {
     // 注册本插件的消息监听包
-    AuthorizeServer.registerEvents(this, "your.package.name")
+    // - 默认 useKsp = false：走反射注册（无需 KSP 处理器）
+    // - 若你启用了 KSP：建议 useKsp = true（强制仅使用 KSP 生成的注册器，避免重复订阅）
+    AuthorizeServer.registerEvents(this, "your.package.name", useKsp = true)
 }
 ```
 
@@ -92,8 +94,12 @@ class MyListener {
 `AuthorizeServer` 是功能入口类（原 `PermissionServer` 已弃用，但仍保留向下兼容）。
 
 ### 注册事件
-`registerEvents(plugin, packageName, exceptionHandle, prefix)`
+`registerEvents(plugin, packageName, exceptionHandle, prefix, useKsp)`
 扫描指定包下所有带有 `@EventComponent` 的类并自动注册监听器。
+
+其中 `useKsp` 的语义：
+* `useKsp = false`（默认）：使用反射注册监听器。
+* `useKsp = true`：强制使用 KSP 生成的注册器（若未生成对应注册器会直接报错，便于快速发现“没启用 KSP/没重新构建”问题）。
 
 ### 注册权限码
 `registerPermissions(plugin, vararg perms)`
@@ -112,8 +118,11 @@ class MyListener {
 
 ### 接入步骤：
 1. 在项目 `build.gradle.kts` 的 `plugins` 块中引入 `com.google.devtools.ksp`。
-2. 在 `dependencies` 块中添加 `ksp("cn.chahuyun:huyan-authorize-ksp:版本号")`。
-3. **无需修改业务代码**: KSP 会在编译时自动为每个类生成 `XXX_AuthorizeRegistrar` 辅助类，主插件在运行时会优先识别并加载它们。
+2. 在 `dependencies` 块中添加 `ksp("cn.chahuyun:HuYanAuthorize-ksp:版本号")`。
+3. 在你的插件 `onEnable` 中调用 `AuthorizeServer.registerEvents(..., useKsp = true)`。
+4. **无需修改业务代码**: KSP 会在编译时为每个 `@EventComponent` 类生成 `XXX_AuthorizeRegistrar`，运行时通过 `ServiceLoader` 自动发现并注册。
+
+> 说明：项目内部已拆分为 `auth-api/auth-core/auth-ksp` 三模块用于工程维护，但对下游发布仍是 `cn.chahuyun:HuYanAuthorize`（核心）与 `cn.chahuyun:HuYanAuthorize-ksp`（处理器）；`auth-api` 不对外发布。
 
 ---
 
