@@ -126,3 +126,4 @@ annotation class MessageAuthorize(
     val concurrency: ConcurrencyKind = ConcurrencyKind.CONCURRENT,
 
     )
+

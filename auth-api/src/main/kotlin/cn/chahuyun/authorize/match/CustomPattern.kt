@@ -21,3 +21,4 @@ interface CustomPattern {
     fun custom(event: Event): Boolean
 
 }
+
