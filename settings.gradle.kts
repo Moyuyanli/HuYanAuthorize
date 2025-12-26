@@ -18,6 +18,5 @@ pluginManagement{
 
 rootProject.name = "HuYanAuthorize"
 
-include("auth-api")
 include("auth-core")
 include("auth-ksp")
