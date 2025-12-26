@@ -26,14 +26,8 @@ base {
     archivesName.set("HuYanAuthorize")
 }
 
-// 将 auth-api 的源码直接编译进 auth-core（最终也会打进 HuYanAuthorize 的 jar / sourcesJar）
 kotlin {
     jvmToolchain(11)
-    sourceSets {
-        main {
-            kotlin.srcDir(rootProject.file("auth-api/src/main/kotlin"))
-        }
-    }
 }
 
 // 统一 JVM 目标版本，避免 compileJava(17)/compileKotlin(1.8) 不一致警告（Gradle 8+ 会变为错误）
@@ -46,7 +40,7 @@ tasks.withType<JavaCompile>().configureEach {
 
 dependencies {
     compileOnly(libs.overflow.core.api)
-    // auth-api 的注解引用了 mirai 的 EventPriority/ConcurrencyKind 等类型，这里需要提供编译期依赖
+    // 注解引用了 mirai 的 EventPriority/ConcurrencyKind 等类型，这里需要提供编译期依赖
     compileOnly(libs.mirai.core.api)
 
     ksp(project(":auth-ksp"))
