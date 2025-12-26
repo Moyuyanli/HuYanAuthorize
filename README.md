@@ -122,7 +122,7 @@ class MyListener {
 3. 在你的插件 `onEnable` 中调用 `AuthorizeServer.registerEvents(..., useKsp = true)`。
 4. **无需修改业务代码**: KSP 会在编译时为每个 `@EventComponent` 类生成 `XXX_AuthorizeRegistrar`，运行时通过 `ServiceLoader` 自动发现并注册。
 
-> 说明：项目内部已拆分为 `auth-api/auth-core/auth-ksp` 三模块用于工程维护，但对下游发布仍是 `cn.chahuyun:HuYanAuthorize`（核心）与 `cn.chahuyun:HuYanAuthorize-ksp`（处理器）；`auth-api` 不对外发布。
+> 说明：项目内部使用多模块用于工程维护，对下游发布仍是 `cn.chahuyun:HuYanAuthorize`（核心）与 `cn.chahuyun:HuYanAuthorize-ksp`（处理器）。
 
 ---
 
