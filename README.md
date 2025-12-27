@@ -106,6 +106,9 @@ class MyListener {
 * `useKsp = false`（默认）：使用反射注册监听器。
 * `useKsp = true`：强制使用 KSP 生成的注册器（若未生成对应注册器会直接报错，便于快速发现“没启用 KSP/没重新构建”问题）。
 
+> 重要：`useKsp` **不会“传递到下游插件”**。它只是你当前插件在运行时选择“用 KSP 注册/用反射注册”的开关。
+> 下游只有在**自己的工程里**启用了 `com.google.devtools.ksp` 并添加 `ksp("cn.chahuyun:HuYanAuthorize-ksp:...")` 时，才应该传 `useKsp = true`。
+
 ### 注册权限码
 
 `registerPermissions(plugin, vararg perms)`
